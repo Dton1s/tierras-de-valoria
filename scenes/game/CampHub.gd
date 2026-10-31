@@ -75,14 +75,17 @@ var pve_effect_frames: Array[Texture2D] = []
 var pve_effect_frame_index := 0
 func _ready() -> void:
 	theme = load(THEME_PATH)
+	# Construye el fondo y el estado de carga antes de leer metadatos remotos.
+	# Así la escena nunca queda como un canvas vacío si el proveedor omite un campo.
+	_build_interface()
 	account_uid = str(SupabaseManager.current_user.get("id", ""))
-	var user_metadata: Dictionary = SupabaseManager.current_user.get("user_metadata", {})
+	var metadata_value: Variant = SupabaseManager.current_user.get("user_metadata", {})
+	var user_metadata: Dictionary = metadata_value if metadata_value is Dictionary else {}
 	account_name = str(user_metadata.get("display_name", "")).strip_edges()
 	if account_name.is_empty():
 		account_name = str(SupabaseManager.current_user.get("email", "Aventurero"))
 	if account_uid.is_empty():
 		account_uid = "guest"
-	_build_interface()
 	get_viewport().size_changed.connect(_on_viewport_resized)
 	_load_profile()
 	SupabaseManager.profile_loaded.connect(_on_supabase_profile_loaded)
@@ -664,8 +667,10 @@ func _populate_camp_world() -> void:
 	platformer_stage = Node2D.new()
 	platformer_stage.name = "PlatformerVillage"
 	platformer_stage.set_script(PLATFORMER_STAGE_SCRIPT)
+	# Configura el héroe antes de añadir el nodo: _ready() construye el escenario
+	# y crea al personaje, así evitamos cargar dos veces todas sus texturas.
+	platformer_stage.set("active_hero_id", str(_selected_hero().get("id", "guardiana")))
 	camp_points.add_child(platformer_stage)
-	platformer_stage.call("set_hero", str(_selected_hero().get("id", "guardiana")))
 	platformer_stage.connect("interaction_requested", _on_platformer_interaction)
 
 

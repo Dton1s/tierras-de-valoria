@@ -392,7 +392,9 @@ func _valkyrie_walk_paths() -> Array[String]:
 	var source_directory := "res://assets/sprites/characters"
 	var files := DirAccess.get_files_at(source_directory)
 	files.sort()
-	for frame_index in range(24):
+	# Cuatro poses bastan para que la carrera se lea bien. Cada imagen original
+	# mide 900x900; cargar las 24 de golpe puede agotar la memoria gráfica web.
+	for frame_index in range(0, 24, 6):
 		var prefix := "craftpix-net-469596-free-chibi-valkyrie-chara__0_Valkyrie_Walking_%03d__" % frame_index
 		for file_name in files:
 			if file_name.begins_with(prefix) and file_name.ends_with(".png"):
