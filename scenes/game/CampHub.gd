@@ -68,6 +68,7 @@ var currency_icons: Dictionary = {}
 var profile_name_label: Label
 var profile_level_label: Label
 var profile_portrait: TextureRect
+var status_timer: Timer
 var nickname_input: LineEdit
 var nickname_feedback: Label
 var nickname_button: Button
@@ -175,9 +176,25 @@ func _build_interface() -> void:
 	status_label.name = "Status"
 	status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	status_label.custom_minimum_size.y = 28
+	status_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	status_label.offset_left = -360
+	status_label.offset_top = -60
+	status_label.offset_right = 360
+	status_label.offset_bottom = -24
+	status_label.z_index = 20
+	status_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	status_label.add_theme_font_size_override("font_size", 13)
+	status_label.add_theme_color_override("font_color", Color("#fff0cd"))
+	status_label.add_theme_color_override("font_outline_color", Color("#26170e"))
+	status_label.add_theme_constant_override("outline_size", 4)
 	status_label.hide()
-	layout.add_child(status_label)
+	ui_root.add_child(status_label)
+	status_timer = Timer.new()
+	status_timer.name = "StatusToastTimer"
+	status_timer.one_shot = true
+	status_timer.wait_time = 4.0
+	status_timer.timeout.connect(status_label.hide)
+	add_child(status_timer)
 
 
 func _build_hud() -> Control:
@@ -362,7 +379,7 @@ func _show_page(new_page: Page, panel: Control) -> void:
 	if is_instance_valid(currency_hud):
 		currency_hud.visible = camp_operational
 	if is_instance_valid(status_label):
-		status_label.visible = camp_operational
+		status_label.hide()
 	if is_instance_valid(camp_world):
 		camp_world.visible = camp_operational
 	if is_instance_valid(camp_background):
@@ -702,8 +719,7 @@ func _build_camp() -> void:
 	var world_tween := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	world_tween.tween_property(camp_world, "modulate", Color.WHITE, 0.34)
 	_update_hud()
-	_set_status("Refugio del Bosque · Saludos, %s. Las recompensas AFK se acumulan hasta 24 horas." % str(profile.get("nickname", account_name)))
-	status_label.show()
+	_set_status("")
 
 
 func _on_viewport_resized() -> void:
@@ -1170,10 +1186,23 @@ func _summon(currency: String) -> void:
 
 
 func _open_settings() -> void:
-	var view := _panel("Cuenta y ajustes", Vector2(420, 0))
-	_add_body(view.box, "Aventurero: %s\nCuenta Supabase: %s\nID: %s" % [str(profile.get("nickname", account_name)), str(_supabase_manager.current_user.get("email", "")), account_uid])
+	var view := _panel("Cuenta y ajustes", Vector2(430, 0))
+	var account_label := Label.new()
+	account_label.text = "Aventurero · %s" % str(profile.get("nickname", account_name))
+	account_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	account_label.add_theme_font_size_override("font_size", 16)
+	view.box.add_child(account_label)
+	var email_label := Label.new()
+	email_label.text = str(_supabase_manager.current_user.get("email", "Sesión local"))
+	email_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	email_label.add_theme_font_size_override("font_size", 11)
+	email_label.add_theme_color_override("font_color", Color("#765d48"))
+	view.box.add_child(email_label)
 	var google_linked: bool = _supabase_manager.has_google_identity()
-	_add_body(view.box, "Cuenta de Google: %s" % ("Enlazada" if google_linked else "Sin enlazar"))
+	var google_state := Label.new()
+	google_state.text = "Google · %s" % ("Enlazado ✓" if google_linked else "Sin enlazar")
+	google_state.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	view.box.add_child(google_state)
 	google_link_button = _add_button(view.box, "Google enlazado ✓" if google_linked else "Enlazar con Google", _on_google_link_pressed, not google_linked)
 	google_link_button.disabled = google_linked or not _supabase_manager.is_authenticated
 	_add_audio_slider(view.box, "Volumen general", &"Master")
@@ -1204,6 +1233,7 @@ func _on_supabase_auth_completed(action: String, success: bool, result: Dictiona
 
 func _add_audio_slider(parent: VBoxContainer, title: String, bus_name: StringName) -> void:
 	var row := HBoxContainer.new()
+	row.custom_minimum_size.y = 30
 	var label := Label.new()
 	label.text = title
 	label.custom_minimum_size.x = 144
@@ -1375,4 +1405,9 @@ func _set_status(message: String) -> void:
 	last_status = message
 	if is_instance_valid(status_label):
 		status_label.text = message
+		status_label.visible = not message.is_empty() and camp_operational
+		if is_instance_valid(status_timer):
+			status_timer.stop()
+			if status_label.visible:
+				status_timer.start()
 

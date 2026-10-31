@@ -5,15 +5,33 @@ extends Node2D
 signal interaction_requested(kind: String, destination: Vector2)
 
 const BASE_SIZE := Vector2(1280.0, 720.0)
-const VILLAGE_BACKGROUND := "res://assets/sprites/environments/medieval_village_intc2748/Preview/Medieval_Village.png"
+const GREEN_FIELD_LAYERS := [
+	"res://assets/sprites/environments/green_field_fkgcluster/PNG/00_sky.png",
+	"res://assets/sprites/environments/green_field_fkgcluster/PNG/01_back.png",
+	"res://assets/sprites/environments/green_field_fkgcluster/PNG/02_cloud1.png",
+	"res://assets/sprites/environments/green_field_fkgcluster/PNG/03_cloud2.png",
+	"res://assets/sprites/environments/green_field_fkgcluster/PNG/04_mid1.png",
+	"res://assets/sprites/environments/green_field_fkgcluster/PNG/05_mid2.png",
+	"res://assets/sprites/environments/green_field_fkgcluster/PNG/06_front.png",
+]
+const HOUSE_WALL := "res://assets/sprites/environments/medieval_village_intc2748/Medieval House/House_Wall.png"
+const HOUSE_ROOF_LEFT := "res://assets/sprites/environments/medieval_village_intc2748/Medieval House/Roof_1.png"
+const HOUSE_ROOF_RIGHT := "res://assets/sprites/environments/medieval_village_intc2748/Medieval House/Roof_2.png"
+const HOUSE_DOOR := "res://assets/sprites/environments/medieval_village_intc2748/Medieval House/Wooden_Door.png"
+const HOUSE_WINDOW := "res://assets/sprites/environments/medieval_village_intc2748/Medieval House/Window_1.png"
 const CHEST_SHEET := "res://assets/sprites/props/animated_chests_admurin/Chests.png"
 const BLACKSMITH_SHEET := "res://assets/sprites/characters/npcs/blacksmith_mattz/BLACKSMITH.png"
-const GOBLIN_PATH := "res://assets/sprites/enemies/craftpix-net-228980-free-top-down-goblin-char__Front - Idle_000__00170a9b3881.png"
-const GOBLIN_REGION := Rect2(112, 54, 288, 352)
-const GROUND_LINE := 632.0
+const GOBLIN_BLINK_SHEET := "res://assets/sprites/enemies/craftpix-net-228980-free-top-down-goblin-char__Front - Idle blinking__eafdf012a8f7.png"
+const WARRIOR_IDLE_FRAMES := [
+	"res://assets/sprites/characters/CartoonWarrior__IdleSword_01__9c2e6a25dbf0.png",
+	"res://assets/sprites/characters/CartoonWarrior__IdleSword_02__08c74be03e78.png",
+	"res://assets/sprites/characters/CartoonWarrior__IdleSword_03__724cb26754ed.png",
+	"res://assets/sprites/characters/CartoonWarrior__IdleSword_04__6392e1b3f1f4.png",
+]
+const GROUND_LINE := 600.0
 const INTERIOR_GROUND_LINE := 515.0
-const HERO_RENDER_HEIGHT := 146.0
-const ACTOR_RENDER_HEIGHT := 134.0
+const HERO_RENDER_HEIGHT := 116.0
+const ACTOR_RENDER_HEIGHT := 108.0
 
 
 var world_root: Node2D
@@ -73,7 +91,10 @@ func move_hero_to(destination: Vector2, arrived: Callable) -> void:
 		return
 	if is_instance_valid(movement_tween):
 		movement_tween.kill()
-	var target := Vector2(clampf(destination.x, 52.0, BASE_SIZE.x - 52.0), GROUND_LINE - HERO_RENDER_HEIGHT * 0.5)
+	hero.rotation = 0.0
+	hero.scale = _hero_render_scale()
+	var floor_line := INTERIOR_GROUND_LINE if inside_house else GROUND_LINE
+	var target := Vector2(clampf(destination.x, 52.0, BASE_SIZE.x - 52.0), floor_line - HERO_RENDER_HEIGHT * 0.5)
 	hero.flip_h = target.x < hero.position.x
 	hero.play("walk")
 	_animate_hero_motion(true)
@@ -137,9 +158,6 @@ func _unhandled_input(event: InputEvent) -> void:
 func set_interior(enabled: bool) -> void:
 	inside_house = enabled
 	_build_world()
-	if is_instance_valid(hero):
-		hero.position = Vector2(570, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5) if enabled else Vector2(565, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5)
-		hero.play("idle")
 
 
 func _build_world() -> void:
@@ -160,18 +178,49 @@ func _build_world() -> void:
 
 
 func _build_exterior() -> void:
-	# This pack preview is a complete side-view village: sky, house, and one
-	# continuous walkable floor. It avoids mixing the old top-down forest with
-	# floating platform tiles from a different set.
-	var backdrop := _add_sprite(VILLAGE_BACKGROUND, Vector2(640, 360), Vector2(1280.0 / 576.0, 720.0 / 324.0), -30)
-	backdrop.name = "VillageScene"
+	# Build the scene from the actual parallax layers and house sprites. The
+	# promotional preview includes a castle wall and a baked-in floor, which
+	# made the actors look like they were floating over a screenshot.
+	for index in range(GREEN_FIELD_LAYERS.size() - 1):
+		var layer := _add_sprite(str(GREEN_FIELD_LAYERS[index]), Vector2(640, 360), Vector2(4, 4), -40 + index)
+		layer.name = "GreenFieldLayer%d" % index
+	_add_walkable_ground()
+	_add_cabin()
 	_add_goblin()
 	_add_knight()
 	_add_gacha_forge()
 	_add_blacksmith()
 	_add_exterior_chest()
 	_add_player()
-	_add_interaction("door", Vector2(850, GROUND_LINE - 68.0), Vector2(90, 128), "Entrar en la casa", Vector2(800, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -148.0)
+	_add_interaction("door", Vector2(955, GROUND_LINE - 62.0), Vector2(90, 128), "Entrar en la casa", Vector2(855, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -148.0)
+
+
+func _add_walkable_ground() -> void:
+	var earth := Polygon2D.new()
+	earth.name = "WalkableEarth"
+	earth.polygon = PackedVector2Array([Vector2(0, GROUND_LINE), Vector2(1280, GROUND_LINE), Vector2(1280, 720), Vector2(0, 720)])
+	earth.color = Color("#765033")
+	earth.z_index = 6
+	world_root.add_child(earth)
+	# The field pack supplies the grass edge and flowers; actors stand just in
+	# front of it at the same baseline, so feet read clearly against the ground.
+	var grass_edge := _add_sprite(str(GREEN_FIELD_LAYERS.back()), Vector2(640, 360), Vector2(4, 4), 8)
+	grass_edge.name = "WalkableGrassEdge"
+
+
+func _add_cabin() -> void:
+	var wall := _add_sprite(HOUSE_WALL, Vector2(955, GROUND_LINE - 112), Vector2(2.1, 2.1), 10)
+	wall.name = "CabinWall"
+	var left_roof := _add_sprite(HOUSE_ROOF_LEFT, Vector2(895, GROUND_LINE - 230), Vector2(2.25, 2.25), 12)
+	left_roof.name = "CabinRoofLeft"
+	var right_roof := _add_sprite(HOUSE_ROOF_RIGHT, Vector2(1015, GROUND_LINE - 230), Vector2(2.25, 2.25), 12)
+	right_roof.name = "CabinRoofRight"
+	var door := _add_sprite(HOUSE_DOOR, Vector2(955, GROUND_LINE - 55), Vector2(1.55, 1.55), 14)
+	door.name = "CabinDoor"
+	var left_window := _add_sprite(HOUSE_WINDOW, Vector2(880, GROUND_LINE - 142), Vector2(1.45, 1.45), 14)
+	left_window.name = "CabinLeftWindow"
+	var right_window := _add_sprite(HOUSE_WINDOW, Vector2(1030, GROUND_LINE - 142), Vector2(1.45, 1.45), 14)
+	right_window.name = "CabinRightWindow"
 
 
 func _build_interior() -> void:
@@ -226,14 +275,16 @@ func _add_blacksmith() -> void:
 
 
 func _add_goblin() -> void:
-	var sprite := Sprite2D.new()
+	var sprite := AnimatedSprite2D.new()
 	sprite.name = "GoblinGuide"
-	sprite.texture = _atlas(GOBLIN_PATH, GOBLIN_REGION)
+	sprite.sprite_frames = _make_goblin_frames()
+	sprite.animation = "idle"
 	sprite.position = Vector2(145, GROUND_LINE - ACTOR_RENDER_HEIGHT * 0.5)
-	sprite.scale = Vector2.ONE * ACTOR_RENDER_HEIGHT / GOBLIN_REGION.size.y
+	sprite.scale = Vector2(0.37, 0.37)
 	sprite.z_index = 15
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	world_root.add_child(sprite)
+	sprite.play("idle")
 	_animate_actor_bob(sprite, 3.0, 0.58)
 	_add_interaction("pve", sprite.position, Vector2(100, 145), "Goblin · Aventura PvE", Vector2(230, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -160.0)
 
@@ -246,9 +297,24 @@ func _animate_actor_bob(actor: Node2D, amplitude: float, half_cycle: float) -> v
 
 
 func _add_knight() -> void:
-	var portrait := _atlas("res://assets/sprites/characters/Cartoon Characters by Rgs_dev__idle_1__0b2202b72ab3.png", Rect2(163, 140, 189, 240))
-	var knight := _add_sprite_texture(portrait, Vector2(420, GROUND_LINE - ACTOR_RENDER_HEIGHT * 0.5), Vector2.ONE * ACTOR_RENDER_HEIGHT / 240.0, 15)
+	var frames := SpriteFrames.new()
+	frames.add_animation("idle")
+	frames.set_animation_speed("idle", 6.0)
+	frames.set_animation_loop("idle", true)
+	for frame_path in WARRIOR_IDLE_FRAMES:
+		var texture := load(str(frame_path)) as Texture2D
+		if texture != null:
+			frames.add_frame("idle", texture)
+	var knight := AnimatedSprite2D.new()
 	knight.name = "ArenaKnight"
+	knight.sprite_frames = frames
+	knight.animation = "idle"
+	knight.position = Vector2(420, GROUND_LINE - ACTOR_RENDER_HEIGHT * 0.5)
+	knight.scale = Vector2(2.8, 2.8)
+	knight.z_index = 15
+	knight.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	world_root.add_child(knight)
+	knight.play("idle")
 	_add_interaction("pvp", knight.position, Vector2(102, 145), "Eldric · Arena PvP", Vector2(330, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -160.0)
 
 
@@ -307,6 +373,10 @@ func _add_house_furniture() -> void:
 
 func _add_player() -> void:
 	set_hero(active_hero_id)
+	if inside_house and is_instance_valid(hero):
+		hero.position = Vector2(350, 485)
+		hero.rotation = PI * 0.5
+		hero.scale = _hero_render_scale() * 0.82
 
 
 func _add_interaction(kind: String, at: Vector2, size: Vector2, label_text: String, player_destination: Vector2, label_offset_y: float = -155.0) -> void:
@@ -337,7 +407,10 @@ func _add_interaction(kind: String, at: Vector2, size: Vector2, label_text: Stri
 	label.add_theme_color_override("font_outline_color", Color("#302014"))
 	label.add_theme_constant_override("outline_size", 4)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.hide()
 	area.add_child(label)
+	area.mouse_entered.connect(label.show)
+	area.mouse_exited.connect(label.hide)
 	world_root.add_child(area)
 
 
@@ -377,6 +450,29 @@ func _make_chest_frames() -> SpriteFrames:
 			atlas.region = Rect2(frame * 48, 0, 48, 32)
 			frames.add_frame("idle", atlas)
 	return frames
+
+
+func _make_goblin_frames() -> SpriteFrames:
+	var frames := SpriteFrames.new()
+	frames.add_animation("idle")
+	frames.set_animation_speed("idle", 7.0)
+	frames.set_animation_loop("idle", true)
+	var sheet := load(GOBLIN_BLINK_SHEET) as Texture2D
+	if sheet != null:
+		var frame_size := sheet.get_size().x / 4.0
+		for frame_index in range(16):
+			var atlas := AtlasTexture.new()
+			atlas.atlas = sheet
+			atlas.region = Rect2((frame_index % 4) * frame_size, floori(float(frame_index) / 4.0) * frame_size, frame_size, frame_size)
+			frames.add_frame("idle", atlas)
+	return frames
+
+
+func _hero_render_scale() -> Vector2:
+	if not is_instance_valid(hero) or hero.sprite_frames == null or hero.sprite_frames.get_frame_count("idle") == 0:
+		return Vector2.ONE
+	var frame := hero.sprite_frames.get_frame_texture("idle", 0)
+	return Vector2.ONE * HERO_RENDER_HEIGHT / maxf(1.0, frame.get_size().y)
 
 
 func _make_hero_frames(hero_id: String, selected_texture: Texture2D) -> SpriteFrames:
