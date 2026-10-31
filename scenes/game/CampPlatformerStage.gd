@@ -194,7 +194,6 @@ func _build_exterior() -> void:
 	_add_knight()
 	_add_gacha_forge()
 	_add_blacksmith()
-	_add_exterior_chest()
 	_add_player()
 	_add_interaction("door", Vector2(955, GROUND_LINE - 62.0), Vector2(90, 128), "Entrar en la casa", Vector2(855, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -148.0)
 
@@ -273,15 +272,15 @@ func _build_interior() -> void:
 	_add_room_rect("FloorBoardLineA", Color("#8b6242"), Rect2(82, 562, 988, 2), -9)
 	_add_room_rect("FloorBoardLineB", Color("#5c3d2c"), Rect2(82, 594, 988, 2), -9)
 
-	_add_room_window(Vector2(205, 219))
-	_add_room_wall_lantern(Vector2(548, 224))
-	_add_room_shelf(Vector2(684, 290))
-	_add_sprite("res://assets/sprites/environments/medieval_village_intc2748/Objects/Notice_Board.png", Vector2(850, 231), Vector2(1.55, 1.55), -5).name = "RoomNoticeBoard"
+	_add_room_window(Vector2(176, 214))
+	_add_room_wall_lantern(Vector2(552, 209))
+	_add_room_shelf(Vector2(660, 307))
+	_add_sprite("res://assets/sprites/environments/medieval_village_intc2748/Objects/Notice_Board.png", Vector2(921, 218), Vector2(1.55, 1.55), -5).name = "RoomNoticeBoard"
 	_add_house_furniture()
 	_add_room_exit_door()
 	_add_player()
 	_add_interaction("bed", Vector2(350, 475), Vector2(280, 145), "Cama · Experiencia AFK", Vector2(430, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -125.0)
-	_add_interaction("chest", Vector2(785, 472), Vector2(148, 112), "Cofre · Recompensas AFK", Vector2(700, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -112.0)
+	_add_interaction("chest", Vector2(785, 463.8), Vector2(176, 132), "Cofre · Recompensas AFK", Vector2(700, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -112.0)
 	_add_interaction("door", Vector2(1000, 469), Vector2(138, 178), "Salir al campamento", Vector2(885, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -145.0)
 
 
@@ -346,7 +345,7 @@ func _add_room_exit_door() -> void:
 	var sign := Label.new()
 	sign.name = "ExitDoorSign"
 	sign.text = "SALIDA · CAMPAMENTO"
-	sign.position = Vector2(904, 344)
+	sign.position = Vector2(904, 320)
 	sign.size = Vector2(200, 25)
 	sign.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sign.add_theme_font_size_override("font_size", 13)
@@ -397,14 +396,14 @@ func _add_house_furniture() -> void:
 	animated_chest.name = "AnimatedRewardChest"
 	animated_chest.sprite_frames = _make_chest_frames()
 	animated_chest.animation = "idle"
-	animated_chest.position = Vector2(785, INTERIOR_GROUND_LINE - 44.8)
-	animated_chest.scale = Vector2(2.8, 2.8)
+	animated_chest.position = Vector2(785, INTERIOR_GROUND_LINE - 51.2)
+	animated_chest.scale = Vector2(3.2, 3.2)
 	animated_chest.z_index = 12
 	animated_chest.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	world_root.add_child(animated_chest)
 	animated_chest.play("idle")
 
-	var barrel := _add_sprite("res://assets/sprites/environments/medieval_village_intc2748/Objects/Wooden_Barrel.png", Vector2(151, INTERIOR_GROUND_LINE - 42), Vector2(1.35, 1.35), 7)
+	var barrel := _add_sprite("res://assets/sprites/environments/medieval_village_intc2748/Objects/Wooden_Barrel.png", Vector2(151, INTERIOR_GROUND_LINE - 28.8), Vector2(1.8, 1.8), 7)
 	barrel.name = "InteriorSupplyBarrel"
 
 
@@ -482,20 +481,6 @@ func _add_gacha_forge() -> void:
 	var portal_height := 138.0
 	var portal := _add_sprite_texture(icon, Vector2(700, GROUND_LINE - portal_height * 0.56), Vector2.ONE * portal_height / icon.get_size().y, 14)
 	portal.name = "GachaPortal"
-
-
-func _add_exterior_chest() -> void:
-	var chest := AnimatedSprite2D.new()
-	chest.name = "AnimatedCampChest"
-	chest.sprite_frames = _make_chest_frames()
-	chest.animation = "idle"
-	chest.position = Vector2(1090, GROUND_LINE - 35.0)
-	chest.scale = Vector2(2.05, 2.05)
-	chest.z_index = 16
-	chest.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	world_root.add_child(chest)
-	chest.play("idle")
-	_add_interaction("chest", chest.position, Vector2(120, 90), "Cofre · Recompensas", Vector2(980, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -130.0)
 
 
 func _add_player() -> void:
