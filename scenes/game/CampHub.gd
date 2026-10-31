@@ -8,6 +8,7 @@ const CAMP_CHEST_PATH := "res://assets/ui/Stylized_Game_Essentials_147_Icons__01
 const CAMP_GACHA_PORTAL_PATH := "res://assets/ui/cartoon-game-icons-free-sampler-icons__anime_raid_portal__53dfbb1cbc8f.png"
 const WELCOME_NPC_PATH := "res://assets/sprites/characters/Arcane Wizard__0 (2)__eb3d715bdd4d.png"
 const THEME_PATH := "res://assets/ui/MainMenuTheme.tres"
+const SETTINGS_ICON_PATH := "res://assets/ui/Stylized_Game_Essentials_147_Icons__settings_gear__4c594e6fd7d4.png"
 const PLATFORMER_STAGE_SCRIPT = preload("res://scenes/game/CampPlatformerStage.gd")
 const LOCAL_PROFILE_PATH := "user://valoria_profiles.cfg"
 const MAX_AFK_SECONDS := 86400
@@ -140,7 +141,8 @@ func _build_interface() -> void:
 	camp_world.remove_child(camp_modal_shade)
 	ui_root.add_child(camp_modal_shade)
 	camp_modal_shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	camp_modal_shade.z_index = -1
+	# Keep the shade above the game world and below the HUD and popup.
+	camp_modal_shade.z_index = 4
 	camp_modal_shade.color = Color(0.015, 0.025, 0.02, 0.58)
 	camp_modal_shade.mouse_filter = Control.MOUSE_FILTER_STOP
 
@@ -173,6 +175,7 @@ func _build_interface() -> void:
 	page_host.name = "PageHost"
 	page_host.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	page_host.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	page_host.z_index = 2
 	page_scroll.add_child(page_host)
 	status_label = Label.new()
 	status_label.name = "Status"
@@ -200,24 +203,70 @@ func _build_interface() -> void:
 
 
 func _build_hud() -> Control:
-	var hud := VBoxContainer.new()
+	var hud := HBoxContainer.new()
 	hud.name = "ValoriaHUD"
-	hud.add_theme_constant_override("separation", 4)
-	var header := HBoxContainer.new()
+	hud.add_theme_constant_override("separation", 8)
 	var screen_width := get_viewport_rect().size.x
 	var compact := screen_width < 640.0
-	header.name = "HUDHeader"
-	header.add_theme_constant_override("separation", 8 if compact else 16)
-	hud.add_child(header)
+	var currency_panel := PanelContainer.new()
+	currency_panel.name = "CurrencyBarFrame"
+	currency_panel.add_theme_stylebox_override("panel", _hud_panel_style())
+	currency_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	hud.add_child(currency_panel)
+	var currency_margin := MarginContainer.new()
+	for side in ["left", "top", "right", "bottom"]:
+		currency_margin.add_theme_constant_override("margin_" + side, 5 if compact else 7)
+	currency_panel.add_child(currency_margin)
+	currency_grid = GridContainer.new()
+	currency_grid.name = "CurrencyGrid"
+	currency_grid.columns = 4 if screen_width >= 640.0 else 2
+	currency_grid.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	currency_grid.add_theme_constant_override("h_separation", 9 if not compact else 5)
+	currency_grid.add_theme_constant_override("v_separation", 1)
+	currency_margin.add_child(currency_grid)
+	var currencies := [
+		["coins", "Oro"], ["tickets", "Tickets gacha"],
+		["diamonds", "Diamantes"], ["premium_tickets", "Tickets especiales"],
+	]
+	for item in currencies:
+		var badge := HBoxContainer.new()
+		badge.custom_minimum_size = Vector2(67, 24) if screen_width >= 640.0 else Vector2(62, 23)
+		badge.tooltip_text = str(item[1])
+		badge.add_theme_constant_override("separation", 3)
+		var icon := TextureRect.new()
+		icon.texture = load(str(CURRENCY_ICON_PATHS[item[0]]))
+		icon.custom_minimum_size = Vector2(18, 18) if compact else Vector2(20, 20)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		badge.add_child(icon)
+		var label := Label.new()
+		label.text = "0"
+		label.add_theme_font_size_override("font_size", 11 if compact else 12)
+		label.add_theme_color_override("font_color", Color("#fff0cd"))
+		label.add_theme_color_override("font_outline_color", Color("#27180f"))
+		label.add_theme_constant_override("outline_size", 2)
+		badge.add_child(label)
+		currency_grid.add_child(badge)
+		currency_labels[item[0]] = label
+		currency_icons[item[0]] = icon
 	var header_spacer := Control.new()
 	header_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(header_spacer)
+	hud.add_child(header_spacer)
 	var profile_card := PanelContainer.new()
 	profile_card.name = "PlayerProfile"
-	profile_card.custom_minimum_size = Vector2(144, 42) if compact else Vector2(184, 48)
+	profile_card.custom_minimum_size = Vector2(154, 40) if compact else Vector2(180, 44)
+	profile_card.add_theme_stylebox_override("panel", _hud_panel_style())
+	var profile_margin := MarginContainer.new()
+	profile_margin.add_theme_constant_override("margin_left", 5)
+	profile_margin.add_theme_constant_override("margin_right", 5)
+	profile_margin.add_theme_constant_override("margin_top", 3)
+	profile_margin.add_theme_constant_override("margin_bottom", 3)
+	profile_card.add_child(profile_margin)
 	var profile_row := HBoxContainer.new()
 	profile_row.add_theme_constant_override("separation", 5)
-	profile_card.add_child(profile_row)
+	profile_margin.add_child(profile_row)
 	profile_portrait = TextureRect.new()
 	profile_portrait.custom_minimum_size = Vector2(26, 32) if compact else Vector2(32, 38)
 	profile_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -232,69 +281,39 @@ func _build_hud() -> Control:
 	profile_name_label = Label.new()
 	profile_name_label.text = "Aventurero"
 	profile_name_label.clip_text = true
+	profile_name_label.add_theme_font_size_override("font_size", 12 if compact else 13)
 	profile_copy.add_child(profile_name_label)
 	profile_level_label = Label.new()
 	profile_level_label.text = "Nivel 1 · Héroe"
 	profile_level_label.add_theme_font_size_override("font_size", 9 if compact else 11)
 	profile_level_label.add_theme_color_override("font_color", Color(0.34, 0.22, 0.14, 1.0))
 	profile_copy.add_child(profile_level_label)
-	var profile_settings := Button.new()
-	profile_settings.text = "⚙"
+	var profile_settings := TextureButton.new()
+	profile_settings.texture_normal = load(SETTINGS_ICON_PATH)
+	profile_settings.texture_hover = load(SETTINGS_ICON_PATH)
+	profile_settings.texture_pressed = load(SETTINGS_ICON_PATH)
+	profile_settings.ignore_texture_size = true
+	profile_settings.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
 	profile_settings.tooltip_text = "Ajustes de cuenta y juego"
-	profile_settings.custom_minimum_size = Vector2(32, 30) if compact else Vector2(36, 34)
-	profile_settings.add_theme_font_size_override("font_size", 18)
+	profile_settings.custom_minimum_size = Vector2(30, 30)
 	profile_settings.pressed.connect(_open_settings)
 	profile_row.add_child(profile_settings)
-	header.add_child(profile_card)
-	var currency_panel := PanelContainer.new()
-	currency_panel.name = "CurrencyBarFrame"
-	currency_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	hud.add_child(currency_panel)
-	var currency_margin := MarginContainer.new()
-	for side in ["left", "top", "right", "bottom"]:
-		currency_margin.add_theme_constant_override("margin_" + side, 5 if compact else 8)
-	currency_panel.add_child(currency_margin)
-	currency_grid = GridContainer.new()
-	currency_grid.name = "CurrencyGrid"
-	currency_grid.columns = 4 if screen_width >= 440.0 else 2
-	currency_grid.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	currency_grid.add_theme_constant_override("h_separation", 12 if screen_width >= 640.0 else 5)
-	currency_grid.add_theme_constant_override("v_separation", 2)
-	currency_margin.add_child(currency_grid)
-	var currencies := [
-		["coins", "Oro"], ["tickets", "Tickets gacha"],
-		["diamonds", "Diamantes"], ["premium_tickets", "Tickets especiales"],
-	]
-	for item in currencies:
-		var badge := HBoxContainer.new()
-		badge.custom_minimum_size = Vector2(70, 30) if screen_width >= 640.0 else Vector2(62, 28)
-		badge.tooltip_text = str(item[1])
-		badge.add_theme_constant_override("separation", 4)
-		badge.alignment = BoxContainer.ALIGNMENT_BEGIN
-		var badge_content := HBoxContainer.new()
-		badge_content.add_theme_constant_override("separation", 4)
-		badge_content.alignment = BoxContainer.ALIGNMENT_CENTER
-		badge.add_child(badge_content)
-		var icon := TextureRect.new()
-		icon.texture = load(str(CURRENCY_ICON_PATHS[item[0]]))
-		icon.custom_minimum_size = Vector2(22, 22) if screen_width >= 640.0 else Vector2(20, 20)
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		badge_content.add_child(icon)
-		var label := Label.new()
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		label.text = "0"
-		label.add_theme_font_size_override("font_size", 12 if screen_width >= 640.0 else 10)
-		label.add_theme_color_override("font_color", Color(1.0, 0.94, 0.75, 1.0))
-		label.add_theme_color_override("font_outline_color", Color(0.12, 0.08, 0.03, 1.0))
-		label.add_theme_constant_override("outline_size", 3)
-		badge_content.add_child(label)
-		currency_grid.add_child(badge)
-		currency_labels[item[0]] = label
-		currency_icons[item[0]] = icon
+	profile_card.size_flags_horizontal = Control.SIZE_SHRINK_END
+	hud.add_child(profile_card)
 	return hud
+
+
+func _hud_panel_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.12, 0.085, 0.055, 0.76)
+	style.border_color = Color(0.83, 0.65, 0.39, 0.45)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(9)
+	style.content_margin_left = 4
+	style.content_margin_right = 4
+	style.content_margin_top = 2
+	style.content_margin_bottom = 2
+	return style
 
 
 func _panel(title: String, min_size := Vector2(440, 0), close_enabled := true) -> Dictionary:
@@ -304,12 +323,12 @@ func _panel(title: String, min_size := Vector2(440, 0), close_enabled := true) -
 	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var margin := MarginContainer.new()
-	var panel_margin := 14 if get_viewport_rect().size.x < 720.0 else 22
+	var panel_margin := 11 if get_viewport_rect().size.x < 720.0 else 16
 	for side in ["left", "top", "right", "bottom"]:
 		margin.add_theme_constant_override("margin_" + side, panel_margin)
 	panel.add_child(margin)
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 9)
+	box.add_theme_constant_override("separation", 6)
 	margin.add_child(box)
 	var heading_row := HBoxContainer.new()
 	heading_row.add_theme_constant_override("separation", 6)
@@ -320,7 +339,7 @@ func _panel(title: String, min_size := Vector2(440, 0), close_enabled := true) -
 	var heading := Label.new()
 	heading.text = title
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	heading.add_theme_font_size_override("font_size", 23)
+	heading.add_theme_font_size_override("font_size", 20)
 	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	heading_row.add_child(heading)
 	if close_enabled:
@@ -356,7 +375,7 @@ func _add_body(box: VBoxContainer, text: String) -> Label:
 func _add_button(box: VBoxContainer, text: String, callback: Callable, primary := false) -> Button:
 	var button := Button.new()
 	button.text = text
-	button.custom_minimum_size = Vector2(0, 46)
+	button.custom_minimum_size = Vector2(0, 40)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if primary:
 		button.theme_type_variation = "PrimaryButton"
@@ -380,13 +399,15 @@ func _show_page(new_page: Page, panel: Control) -> void:
 	if is_instance_valid(camp_background_shade):
 		camp_background_shade.visible = not camp_operational
 	if is_instance_valid(camp_modal_shade):
-		camp_modal_shade.visible = camp_operational
+		camp_modal_shade.visible = camp_operational and new_page != Page.CAMP
 	if is_instance_valid(page_scroll):
 		page_scroll.show()
+		page_scroll.z_index = 3
 	for child in page_host.get_children():
 		child.queue_free()
 	panel.modulate = Color(1, 1, 1, 0)
 	panel.scale = Vector2(0.96, 0.96)
+	panel.z_index = 1
 	page_host.add_child(panel)
 	call_deferred("_animate_panel_in", panel)
 
@@ -697,6 +718,8 @@ func _build_camp() -> void:
 	print("[CampHub] Construyendo campamento operativo")
 	camp_operational = true
 	page = Page.CAMP
+	if is_instance_valid(platformer_stage) and bool(platformer_stage.get("hero_is_resting")):
+		platformer_stage.call("set_hero_standing")
 	for child in page_host.get_children():
 		child.queue_free()
 	currency_hud.show()
@@ -718,8 +741,8 @@ func _build_camp() -> void:
 func _on_viewport_resized() -> void:
 	if is_instance_valid(currency_grid):
 		var width := get_viewport_rect().size.x
-		currency_grid.columns = 4 if width >= 440.0 else 2
-		currency_grid.add_theme_constant_override("h_separation", 12 if width >= 640.0 else 5)
+		currency_grid.columns = 4 if width >= 640.0 else 2
+		currency_grid.add_theme_constant_override("h_separation", 9 if width >= 640.0 else 5)
 	if is_instance_valid(platformer_stage) and platformer_stage.has_method("_fit_to_viewport"):
 		platformer_stage.call_deferred("_fit_to_viewport")
 
@@ -1181,7 +1204,7 @@ func _summon(currency: String) -> void:
 
 
 func _open_settings() -> void:
-	var view := _panel("Cuenta y ajustes", Vector2(430, 0))
+	var view := _panel("Cuenta y ajustes", Vector2(390, 0))
 	var account_label := Label.new()
 	account_label.text = "Aventurero · %s" % str(profile.get("nickname", account_name))
 	account_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -1228,10 +1251,10 @@ func _on_supabase_auth_completed(action: String, success: bool, result: Dictiona
 
 func _add_audio_slider(parent: VBoxContainer, title: String, bus_name: StringName) -> void:
 	var row := HBoxContainer.new()
-	row.custom_minimum_size.y = 30
+	row.custom_minimum_size.y = 26
 	var label := Label.new()
 	label.text = title
-	label.custom_minimum_size.x = 144
+	label.custom_minimum_size.x = 112
 	row.add_child(label)
 	var slider := HSlider.new()
 	slider.min_value = 0

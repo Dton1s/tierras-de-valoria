@@ -33,6 +33,9 @@ func _ready() -> void:
 	_request = HTTPRequest.new()
 	_request.timeout = REQUEST_TIMEOUT
 	_request.use_threads = true
+	# Supabase can return gzip data that Godot's web runtime fails to inflate.
+	# Ask for an uncompressed response for profile reads and writes.
+	_request.accept_gzip = false
 	add_child(_request)
 	_request.request_completed.connect(_on_request_completed)
 	if not _resume_google_oauth_callback():

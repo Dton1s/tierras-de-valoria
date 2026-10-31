@@ -45,6 +45,7 @@ var hero_bob_tween: Tween
 var interaction_bounds: Array[Rect2] = []
 var interaction_hotspots: Array[Dictionary] = []
 var was_moving_with_keyboard := false
+var hero_is_resting := false
 
 
 func _ready() -> void:
@@ -67,6 +68,7 @@ func _fit_to_viewport() -> void:
 
 func set_hero(hero_id: String) -> void:
 	active_hero_id = hero_id
+	hero_is_resting = false
 	if is_instance_valid(hero):
 		hero.queue_free()
 	if is_instance_valid(hero_bob_tween):
@@ -116,6 +118,8 @@ func move_hero_to(destination: Vector2, arrived: Callable) -> void:
 
 func _process(delta: float) -> void:
 	if not is_instance_valid(hero):
+		return
+	if hero_is_resting:
 		return
 	var movement := Vector2.ZERO
 	if Input.is_action_pressed("ui_left") or Input.is_key_pressed(KEY_A):
@@ -305,10 +309,14 @@ func _build_interior() -> void:
 	_add_room_wall_lantern(Vector2(552, 209))
 	_add_room_shelf(Vector2(660, 307))
 	_add_sprite("res://assets/sprites/environments/medieval_village_intc2748/Objects/Notice_Board.png", Vector2(921, 218), Vector2(1.55, 1.55), -5).name = "RoomNoticeBoard"
+	# Props from the Medieval Village pack give the room small, floor-level
+	# details that share the same pixel-art scale as the barrel and door.
+	_add_sprite("res://assets/sprites/environments/medieval_village_intc2748/Objects/Tree_Stump.png", Vector2(616, INTERIOR_GROUND_LINE - 17), Vector2(2.0, 2.0), 3).name = "BedsideStumpSeat"
+	_add_sprite("res://assets/sprites/environments/medieval_village_intc2748/Objects/Stone.png", Vector2(865, INTERIOR_GROUND_LINE - 11), Vector2(1.8, 1.8), 4).name = "DoorwayStone"
 	_add_house_furniture()
 	_add_room_exit_door()
 	_add_player()
-	_add_interaction("bed", Vector2(370, 447), Vector2(300, 155), "Cama · Experiencia AFK", Vector2(548, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -125.0)
+	_add_interaction("bed", Vector2(370, 466), Vector2(300, 155), "Cama · Experiencia AFK", Vector2(548, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -125.0)
 	_add_interaction("chest", Vector2(785, 463.8), Vector2(176, 132), "Cofre · Recompensas AFK", Vector2(700, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -112.0)
 	_add_interaction("door", Vector2(1003, 449), Vector2(100, 165), "Salir al campamento", Vector2(900, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -145.0)
 
@@ -390,24 +398,23 @@ func _add_room_exit_door() -> void:
 
 
 func _add_house_furniture() -> void:
-	# La alfombra queda enteramente sobre las tablas marrones. La cama está de
-	# perfil y sus cuatro apoyos llegan al suelo, sin flotar ni quedar torcidos.
+	# Alfombra apoyada sobre las tablas; cama baja con las patas tocando el piso.
 	_add_room_rect("BedRugBorder", Color("#533323"), Rect2(220, 512, 328, 96), -7)
 	_add_room_rect("BedRug", Color("#8d4936"), Rect2(229, 519, 310, 82), -6)
 	_add_room_rect("BedRugInset", Color("#b87b4a"), Rect2(240, 526, 288, 68), -5)
 	_add_room_rect("BedRugCenter", Color("#8d4936"), Rect2(252, 533, 264, 54), -4)
-	_add_room_rect("BedLegLeftBack", Color("#4e3020"), Rect2(258, 450, 16, 65), 1)
-	_add_room_rect("BedLegRightBack", Color("#4e3020"), Rect2(488, 450, 16, 65), 1)
-	_add_room_rect("BedHeadboard", Color("#54331f"), Rect2(236, 378, 25, 83), 3)
-	_add_room_rect("BedHeadboardTrim", Color("#a16b3e"), Rect2(240, 383, 17, 72), 4)
-	_add_room_rect("BedFrame", Color("#54331f"), Rect2(252, 438, 255, 24), 4)
-	_add_room_rect("BedFrameTrim", Color("#a16b3e"), Rect2(257, 442, 245, 8), 5)
-	_add_room_rect("BedMattress", Color("#ead8b2"), Rect2(257, 409, 243, 33), 6)
-	_add_room_rect("BedPillow", Color("#fff1d5"), Rect2(266, 414, 64, 21), 7)
-	_add_room_rect("BedQuilt", Color("#8f4037"), Rect2(336, 409, 164, 33), 7)
-	_add_room_rect("BedQuiltFold", Color("#b7684e"), Rect2(346, 414, 143, 8), 8)
-	_add_room_rect("BedLegLeftFront", Color("#4e3020"), Rect2(258, 456, 16, 59), 9)
-	_add_room_rect("BedLegRightFront", Color("#4e3020"), Rect2(488, 456, 16, 59), 9)
+	_add_room_rect("BedLegLeftBack", Color("#4e3020"), Rect2(258, 468, 16, 47), 1)
+	_add_room_rect("BedLegRightBack", Color("#4e3020"), Rect2(488, 468, 16, 47), 1)
+	_add_room_rect("BedHeadboard", Color("#54331f"), Rect2(236, 399, 25, 88), 3)
+	_add_room_rect("BedHeadboardTrim", Color("#a16b3e"), Rect2(240, 404, 17, 74), 4)
+	_add_room_rect("BedFrame", Color("#54331f"), Rect2(252, 468, 255, 24), 4)
+	_add_room_rect("BedFrameTrim", Color("#a16b3e"), Rect2(257, 472, 245, 8), 5)
+	_add_room_rect("BedMattress", Color("#ead8b2"), Rect2(257, 439, 243, 33), 6)
+	_add_room_rect("BedPillow", Color("#fff1d5"), Rect2(266, 444, 64, 21), 7)
+	_add_room_rect("BedQuilt", Color("#8f4037"), Rect2(336, 439, 164, 33), 7)
+	_add_room_rect("BedQuiltFold", Color("#b7684e"), Rect2(346, 444, 143, 8), 8)
+	_add_room_rect("BedLegLeftFront", Color("#4e3020"), Rect2(258, 480, 16, 35), 9)
+	_add_room_rect("BedLegRightFront", Color("#4e3020"), Rect2(488, 480, 16, 35), 9)
 	_add_room_rect("BedFootLeft", Color("#70472c"), Rect2(251, 507, 29, 8), 10)
 	_add_room_rect("BedFootRight", Color("#70472c"), Rect2(481, 507, 29, 8), 10)
 
@@ -512,10 +519,27 @@ func set_hero_resting() -> void:
 		return
 	if is_instance_valid(movement_tween):
 		movement_tween.kill()
+	if is_instance_valid(hero_bob_tween):
+		hero_bob_tween.kill()
+	hero_is_resting = true
 	hero.play("idle")
-	hero.position = Vector2(390, 425)
+	hero.position = Vector2(390, 454)
 	hero.rotation = PI * 0.5
-	hero.scale = _hero_render_scale() * 0.82
+	hero.scale = _hero_render_scale() * 0.68
+	hero.offset = Vector2.ZERO
+	hero.z_index = 8
+	was_moving_with_keyboard = false
+
+
+func set_hero_standing() -> void:
+	if not is_instance_valid(hero):
+		return
+	hero_is_resting = false
+	hero.rotation = 0.0
+	hero.scale = _hero_render_scale()
+	hero.position = Vector2(585, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5) if inside_house else Vector2(565, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5)
+	hero.play("idle")
+	hero.z_index = 10 + int((hero.position.y + HERO_RENDER_HEIGHT * 0.5) / 20.0)
 	was_moving_with_keyboard = false
 	_animate_hero_motion(false)
 
