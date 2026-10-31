@@ -1,0 +1,301 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/CampSelectionMenu.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/environments/Fairy-Tale-2D-Backgrounds__background__90a91df630cf.png" id="2_background"]
+[ext_resource type="Theme" path="res://assets/ui/MainMenuTheme.tres" id="3_theme"]
+
+[node name="CampSelectionMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_theme")
+script = ExtResource("1_script")
+
+[node name="Background" type="TextureRect" parent="."]
+modulate = Color(0.75, 0.78, 0.72, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_background")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="SafeArea" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Scroll" type="ScrollContainer" parent="SafeArea"]
+unique_name_in_owner = true
+layout_mode = 2
+follow_focus = true
+horizontal_scroll_mode = 0
+
+[node name="Center" type="CenterContainer" parent="SafeArea/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Pages" type="VBoxContainer" parent="SafeArea/Scroll/Center"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(440, 0)
+layout_mode = 2
+
+[node name="CampPanel" type="PanelContainer" parent="SafeArea/Scroll/Center/Pages"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="SafeArea/Scroll/Center/Pages/CampPanel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Eyebrow" type="Label" parent="SafeArea/Scroll/Center/Pages/CampPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.49, 0.23, 0.08, 1)
+theme_override_font_sizes/font_size = 13
+text = "TU AVENTURA CONTINÚA"
+horizontal_alignment = 1
+
+[node name="Title" type="Label" parent="SafeArea/Scroll/Center/Pages/CampPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.78, 0.45, 1)
+theme_override_colors/font_outline_color = Color(0.16, 0.09, 0.045, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 38
+text = "Tierras de Valoria"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Subtitle" type="Label" parent="SafeArea/Scroll/Center/Pages/CampPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.27, 0.18, 1)
+text = "¿Adónde te gustaría ir?"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="AccountName" type="Label" parent="SafeArea/Scroll/Center/Pages/CampPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="AccountEmail" type="Label" parent="SafeArea/Scroll/Center/Pages/CampPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.27, 0.18, 1)
+theme_override_font_sizes/font_size = 13
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="AccountId" type="Label" parent="SafeArea/Scroll/Center/Pages/CampPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.27, 0.18, 1)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="SessionFeedback" type="Label" parent="SafeArea/Scroll/Center/Pages/CampPanel/Content"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.14, 0.38, 0.19, 1)
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Spacer" type="Control" parent="SafeArea/Scroll/Center/Pages/CampPanel/Content"]
+custom_minimum_size = Vector2(0, 6)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="EnterHubButton" type="Button" parent="SafeArea/Scroll/Center/Pages/CampPanel/Content"]
+unique_name_in_owner = true
+theme_type_variation = &"PrimaryButton"
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "Ir a Tierras de Valoria"
+
+[node name="OpenSettingsButton" type="Button" parent="SafeArea/Scroll/Center/Pages/CampPanel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+text = "Ajustes y cuenta"
+
+[node name="DisconnectButton" type="Button" parent="SafeArea/Scroll/Center/Pages/CampPanel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "Desconectar"
+
+[node name="QuitButton" type="Button" parent="SafeArea/Scroll/Center/Pages/CampPanel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "Cerrar juego"
+
+[node name="Footer" type="Label" parent="SafeArea/Scroll/Center/Pages/CampPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.27, 0.18, 1)
+theme_override_font_sizes/font_size = 12
+text = "CAMPAMENTO · TIERRAS DE VALORIA"
+horizontal_alignment = 1
+
+[node name="SettingsPanel" type="PanelContainer" parent="SafeArea/Scroll/Center/Pages"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="SafeArea/Scroll/Center/Pages/SettingsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SettingsTitle" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "Ajustes"
+horizontal_alignment = 1
+
+[node name="AccountHeading" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.49, 0.23, 0.08, 1)
+text = "CUENTA DE VALORIA"
+
+[node name="SettingsAccountName" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="SettingsAccountEmail" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.27, 0.18, 1)
+theme_override_font_sizes/font_size = 13
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="SettingsAccountId" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.27, 0.18, 1)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="SettingsSeparator" type="HSeparator" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+layout_mode = 2
+
+[node name="AudioTitle" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.49, 0.23, 0.08, 1)
+text = "AUDIO"
+
+[node name="MasterRow" type="HBoxContainer" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content/MasterRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Volumen General"
+
+[node name="MasterValue" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content/MasterRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 0)
+layout_mode = 2
+text = "100 %"
+horizontal_alignment = 2
+
+[node name="MasterVolume" type="HSlider" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 28)
+size_flags_horizontal = 3
+layout_mode = 2
+max_value = 100.0
+step = 1.0
+value = 100.0
+
+[node name="MusicRow" type="HBoxContainer" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content/MusicRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Música"
+
+[node name="MusicValue" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content/MusicRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 0)
+layout_mode = 2
+text = "100 %"
+horizontal_alignment = 2
+
+[node name="MusicVolume" type="HSlider" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 28)
+size_flags_horizontal = 3
+layout_mode = 2
+max_value = 100.0
+step = 1.0
+value = 100.0
+
+[node name="SFXRow" type="HBoxContainer" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content/SFXRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Efectos de sonido"
+
+[node name="SFXValue" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content/SFXRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 0)
+layout_mode = 2
+text = "100 %"
+horizontal_alignment = 2
+
+[node name="SFXVolume" type="HSlider" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 28)
+size_flags_horizontal = 3
+layout_mode = 2
+max_value = 100.0
+step = 1.0
+value = 100.0
+
+[node name="GraphicsTitle" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.49, 0.23, 0.08, 1)
+text = "GRÁFICOS"
+
+[node name="WindowMode" type="OptionButton" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Modo de pantalla"
+item_count = 2
+selected = 1
+popup/item_0/text = "Pantalla Completa"
+popup/item_0/id = 0
+popup/item_1/text = "Modo Ventana"
+popup/item_1/id = 1
+
+[node name="SettingsBackButton" type="Button" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Volver al campamento"

@@ -1,0 +1,387 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/MainMenu.gd" id="1_script"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/environments/Fairy-Tale-2D-Backgrounds__background__90a91df630cf.png" id="Texture_background"]
+
+[ext_resource type="Theme" path="res://assets/ui/MainMenuTheme.tres" id="Theme_menu"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("Theme_menu")
+script = ExtResource("1_script")
+
+[node name="Background" type="TextureRect" parent="."]
+modulate = Color(0.75, 0.78, 0.72, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("Texture_background")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="SafeArea" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Scroll" type="ScrollContainer" parent="SafeArea"]
+unique_name_in_owner = true
+layout_mode = 2
+follow_focus = true
+horizontal_scroll_mode = 0
+
+[node name="Center" type="CenterContainer" parent="SafeArea/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Pages" type="VBoxContainer" parent="SafeArea/Scroll/Center"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(440, 0)
+layout_mode = 2
+
+[node name="BasePanel" type="PanelContainer" parent="SafeArea/Scroll/Center/Pages"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="SafeArea/Scroll/Center/Pages/BasePanel"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Eyebrow" type="Label" parent="SafeArea/Scroll/Center/Pages/BasePanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.49, 0.23, 0.08, 1)
+theme_override_font_sizes/font_size = 13
+text = "TU PRÓXIMA AVENTURA"
+horizontal_alignment = 1
+
+[node name="Title" type="Label" parent="SafeArea/Scroll/Center/Pages/BasePanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.78, 0.45, 1)
+theme_override_colors/font_outline_color = Color(0.16, 0.09, 0.045, 1)
+theme_override_colors/font_shadow_color = Color(0.08, 0.045, 0.02, 0.75)
+theme_override_constants/outline_size = 3
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 4
+theme_override_font_sizes/font_size = 42
+text = "TIERRAS DE VALORIA"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Subtitle" type="Label" parent="SafeArea/Scroll/Center/Pages/BasePanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.27, 0.18, 1)
+text = "RPG DE FANTASÍA · POR TURNOS"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Spacer" type="Control" parent="SafeArea/Scroll/Center/Pages/BasePanel/Content"]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="OpenLogin" type="Button" parent="SafeArea/Scroll/Center/Pages/BasePanel/Content"]
+theme_type_variation = &"PrimaryButton"
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "Iniciar Sesión"
+
+[node name="OpenRegister" type="Button" parent="SafeArea/Scroll/Center/Pages/BasePanel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "Crear Cuenta"
+
+[node name="OpenSettings" type="Button" parent="SafeArea/Scroll/Center/Pages/BasePanel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "Ajustes"
+
+[node name="Footer" type="Label" parent="SafeArea/Scroll/Center/Pages/BasePanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.27, 0.18, 1)
+theme_override_font_sizes/font_size = 12
+text = "TU LEYENDA COMIENZA AQUÍ"
+horizontal_alignment = 1
+
+[node name="LoginPanel" type="PanelContainer" parent="SafeArea/Scroll/Center/Pages"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="SafeArea/Scroll/Center/Pages/LoginPanel"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="SafeArea/Scroll/Center/Pages/LoginPanel/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Iniciar Sesión"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="SafeArea/Scroll/Center/Pages/LoginPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.27, 0.18, 1)
+text = "Tu equipo te espera."
+horizontal_alignment = 1
+
+[node name="AccountLabel" type="Label" parent="SafeArea/Scroll/Center/Pages/LoginPanel/Content"]
+layout_mode = 2
+text = "Correo electrónico"
+
+[node name="LoginAccount" type="LineEdit" parent="SafeArea/Scroll/Center/Pages/LoginPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "correo@ejemplo.com"
+
+[node name="PasswordLabel" type="Label" parent="SafeArea/Scroll/Center/Pages/LoginPanel/Content"]
+layout_mode = 2
+text = "Contraseña"
+
+[node name="LoginPassword" type="LineEdit" parent="SafeArea/Scroll/Center/Pages/LoginPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Contraseña"
+secret = true
+virtual_keyboard_type = 6
+
+[node name="LoginSubmit" type="Button" parent="SafeArea/Scroll/Center/Pages/LoginPanel/Content"]
+theme_type_variation = &"PrimaryButton"
+unique_name_in_owner = true
+layout_mode = 2
+text = "Iniciar Sesión"
+
+[node name="GoogleLogin" type="Button" parent="SafeArea/Scroll/Center/Pages/LoginPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Iniciar sesión con Google"
+
+[node name="Notice" type="Label" parent="SafeArea/Scroll/Center/Pages/LoginPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.27, 0.18, 1)
+theme_override_font_sizes/font_size = 12
+text = "Accede con correo y contraseña, o continúa con Google."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="LoginStatus" type="Label" parent="SafeArea/Scroll/Center/Pages/LoginPanel/Content"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.22, 0.10, 1)
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="LoginBack" type="Button" parent="SafeArea/Scroll/Center/Pages/LoginPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Volver"
+
+[node name="RegisterPanel" type="PanelContainer" parent="SafeArea/Scroll/Center/Pages"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="SafeArea/Scroll/Center/Pages/RegisterPanel"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="SafeArea/Scroll/Center/Pages/RegisterPanel/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Crear Cuenta"
+horizontal_alignment = 1
+
+[node name="AccountLabel" type="Label" parent="SafeArea/Scroll/Center/Pages/RegisterPanel/Content"]
+layout_mode = 2
+text = "Nombre de la cuenta"
+
+[node name="RegisterAccount" type="LineEdit" parent="SafeArea/Scroll/Center/Pages/RegisterPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Nombre de la cuenta"
+
+[node name="EmailLabel" type="Label" parent="SafeArea/Scroll/Center/Pages/RegisterPanel/Content"]
+layout_mode = 2
+text = "Email"
+
+[node name="RegisterEmail" type="LineEdit" parent="SafeArea/Scroll/Center/Pages/RegisterPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "tu@email.com"
+virtual_keyboard_type = 1
+
+[node name="PasswordLabel" type="Label" parent="SafeArea/Scroll/Center/Pages/RegisterPanel/Content"]
+layout_mode = 2
+text = "Contraseña"
+
+[node name="RegisterPassword" type="LineEdit" parent="SafeArea/Scroll/Center/Pages/RegisterPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Contraseña"
+secret = true
+virtual_keyboard_type = 6
+
+[node name="RegisterSubmit" type="Button" parent="SafeArea/Scroll/Center/Pages/RegisterPanel/Content"]
+theme_type_variation = &"PrimaryButton"
+unique_name_in_owner = true
+layout_mode = 2
+text = "Registrar"
+
+[node name="GoogleRegister" type="Button" parent="SafeArea/Scroll/Center/Pages/RegisterPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Registrarse con Google"
+
+[node name="Notice" type="Label" parent="SafeArea/Scroll/Center/Pages/RegisterPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.27, 0.18, 1)
+theme_override_font_sizes/font_size = 12
+text = "Regístrate con correo o Google y comienza la aventura."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="RegisterStatus" type="Label" parent="SafeArea/Scroll/Center/Pages/RegisterPanel/Content"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.22, 0.10, 1)
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="RegisterBack" type="Button" parent="SafeArea/Scroll/Center/Pages/RegisterPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Volver"
+
+[node name="SettingsPanel" type="PanelContainer" parent="SafeArea/Scroll/Center/Pages"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="SafeArea/Scroll/Center/Pages/SettingsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Ajustes"
+horizontal_alignment = 1
+
+[node name="AudioTitle" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.49, 0.23, 0.08, 1)
+text = "AUDIO"
+
+[node name="MasterRow" type="HBoxContainer" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content/MasterRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Volumen General"
+
+[node name="MasterValue" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content/MasterRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 0)
+layout_mode = 2
+text = "100 %"
+horizontal_alignment = 2
+
+[node name="MasterVolume" type="HSlider" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+tooltip_text = "Volumen General"
+max_value = 100.0
+step = 1.0
+value = 100.0
+
+[node name="MusicRow" type="HBoxContainer" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content/MusicRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Música"
+
+[node name="MusicValue" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content/MusicRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 0)
+layout_mode = 2
+text = "100 %"
+horizontal_alignment = 2
+
+[node name="MusicVolume" type="HSlider" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+tooltip_text = "Volumen de Música"
+max_value = 100.0
+step = 1.0
+value = 100.0
+
+[node name="SFXRow" type="HBoxContainer" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content/SFXRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Efectos de Sonido"
+
+[node name="SFXValue" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content/SFXRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 0)
+layout_mode = 2
+text = "100 %"
+horizontal_alignment = 2
+
+[node name="SFXVolume" type="HSlider" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+tooltip_text = "Volumen de Efectos de Sonido"
+max_value = 100.0
+step = 1.0
+value = 100.0
+
+[node name="GraphicsTitle" type="Label" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.49, 0.23, 0.08, 1)
+text = "GRÁFICOS"
+
+[node name="WindowMode" type="OptionButton" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Modo de pantalla"
+item_count = 2
+selected = 1
+popup/item_0/text = "Pantalla Completa"
+popup/item_0/id = 0
+popup/item_1/text = "Modo Ventana"
+popup/item_1/id = 1
+
+[node name="SettingsBack" type="Button" parent="SafeArea/Scroll/Center/Pages/SettingsPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Volver"
