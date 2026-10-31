@@ -6,6 +6,7 @@ const CAMP_CHEST_PATH := "res://assets/ui/Stylized_Game_Essentials_147_Icons__01
 const CAMP_GACHA_PORTAL_PATH := "res://assets/ui/cartoon-game-icons-free-sampler-icons__anime_raid_portal__53dfbb1cbc8f.png"
 const WELCOME_NPC_PATH := "res://assets/sprites/characters/Arcane Wizard__0 (2)__eb3d715bdd4d.png"
 const THEME_PATH := "res://assets/ui/MainMenuTheme.tres"
+const PLATFORMER_STAGE_SCRIPT = preload("res://scenes/game/CampPlatformerStage.gd")
 const LOCAL_PROFILE_PATH := "user://valoria_profiles.cfg"
 const MAX_AFK_SECONDS := 86400
 const CURRENCY_ICON_PATHS := {
@@ -54,6 +55,7 @@ var page_scroll: ScrollContainer
 var camp_world: Control
 var camp_points: Control
 var camp_modal_shade: ColorRect
+var platformer_stage: Node2D
 var currency_hud: Control
 var currency_grid: GridContainer
 var currency_labels: Dictionary = {}
@@ -650,45 +652,38 @@ func _on_viewport_resized() -> void:
 		var width := get_viewport_rect().size.x
 		currency_grid.columns = 4 if width >= 440.0 else 2
 		currency_grid.add_theme_constant_override("h_separation", 12 if width >= 640.0 else 5)
-	if not camp_operational or not is_instance_valid(camp_points):
-		return
-	for child in camp_points.get_children():
-		child.queue_free()
-	call_deferred("_populate_camp_world")
+	if is_instance_valid(platformer_stage) and platformer_stage.has_method("_fit_to_viewport"):
+		platformer_stage.call_deferred("_fit_to_viewport")
 
 
 func _populate_camp_world() -> void:
-	var viewport_width := get_viewport_rect().size.x
-	var viewport_height := get_viewport_rect().size.y
-	var compact := viewport_width < 640.0
-	var sleeping_hero := _selected_hero()
-	var world_scale := clampf(minf(viewport_width / 1152.0, viewport_height / 720.0), 0.62, 1.0)
-	var hotspot_size := Vector2(144, 114) * world_scale if compact else Vector2(166, 124) * world_scale
-	var bed_anchor := Vector2(0.66, 0.43)
-	var chest_anchor := Vector2(0.85, 0.76)
-	var pve_anchor := Vector2(0.16, 0.73)
-	var pvp_anchor := Vector2(0.34, 0.53)
-	var gacha_anchor := Vector2(0.52, 0.75)
-	if compact:
-		# En móviles se usan dos filas para que los cinco puntos mantengan áreas
-		# táctiles separadas y no invadan la cabecera de recursos.
-		bed_anchor = Vector2(0.25, 0.43)
-		chest_anchor = Vector2(0.75, 0.43)
-		pve_anchor = Vector2(0.25, 0.75)
-		pvp_anchor = Vector2(0.75, 0.75)
-		gacha_anchor = Vector2(0.50, 0.91)
-		hotspot_size = Vector2(112, 94) * world_scale
-	elif viewport_width < 900.0:
-		bed_anchor = Vector2(0.28, 0.45)
-		chest_anchor = Vector2(0.76, 0.45)
-		pve_anchor = Vector2(0.17, 0.74)
-		pvp_anchor = Vector2(0.50, 0.68)
-		gacha_anchor = Vector2(0.83, 0.74)
-	_add_location_hotspot("Cama del héroe", "EXP AFK · Descansar", _make_bed_visual(_hero_portrait_texture(sleeping_hero), compact), _open_bed_rewards, bed_anchor, hotspot_size)
-	_add_location_hotspot("Cofre del Alba", "Oro · Recompensas AFK", _make_sprite_visual(load(CAMP_CHEST_PATH) as Texture2D, Vector2(78, 72) if compact else Vector2(100, 92)), _open_chest_rewards, chest_anchor, hotspot_size)
-	_add_location_hotspot("Gólem del bosque", "Aventura PvE · Fases", _make_sprite_visual(_pve_enemy_texture(), Vector2(70, 80) if compact else Vector2(92, 104)), _open_pve, pve_anchor, hotspot_size)
-	_add_location_hotspot("Caballero Eldric", "Arena PvP · Desafíos", _make_sprite_visual(_hero_portrait_texture(COMMON_HEROES[1]), Vector2(68, 78) if compact else Vector2(90, 102)), _open_pvp, pvp_anchor, hotspot_size)
-	_add_location_hotspot("Máquina Gacha", "Invocar · Héroes", _make_gacha_machine_visual(compact), _open_gacha, gacha_anchor, hotspot_size)
+	if is_instance_valid(platformer_stage):
+		platformer_stage.queue_free()
+	for child in camp_points.get_children():
+		child.queue_free()
+	platformer_stage = Node2D.new()
+	platformer_stage.name = "PlatformerVillage"
+	platformer_stage.set_script(PLATFORMER_STAGE_SCRIPT)
+	camp_points.add_child(platformer_stage)
+	platformer_stage.call("set_hero", str(_selected_hero().get("id", "guardiana")))
+	platformer_stage.connect("interaction_requested", _on_platformer_interaction)
+
+
+func _on_platformer_interaction(kind: String, destination: Vector2) -> void:
+	if not is_instance_valid(platformer_stage):
+		return
+	var arrived := func() -> void:
+		match kind:
+			"pve": _open_pve()
+			"pvp": _open_pvp()
+			"gacha": _open_gacha()
+			"chest": _open_chest_rewards()
+			"bed": _open_bed_rewards()
+			"door":
+				var entering := not bool(platformer_stage.get("inside_house"))
+				platformer_stage.call("set_interior", entering)
+				_set_status("Has entrado en la casa del refugio." if entering else "Has vuelto al campamento exterior.")
+	platformer_stage.call("move_hero_to", destination, arrived)
 
 
 func _add_location_hotspot(title: String, subtitle: String, visual: Control, callback: Callable, anchor: Vector2, hotspot_size := Vector2(176, 148)) -> void:

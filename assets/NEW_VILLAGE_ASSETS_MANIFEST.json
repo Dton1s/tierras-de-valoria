@@ -1,0 +1,401 @@
+{
+  "purpose": "New village and platformer resources extracted from user-provided archives for Tierras de Valoria.",
+  "notes": [
+    "Imported PNG sprites and Aseprite source sheets only; excluded embedded Unity package and unrelated archive payloads.",
+    "For public distribution, keep original source sheets out of public repo/standalone asset downloads when the pack license prohibits asset redistribution."
+  ],
+  "packs": [
+    {
+      "archive": "Pixel Art Platformer - Village Props v2.3.2.zip",
+      "sha256": "844756ba8c456caa4d3fe3e4431768771021b053ad21424720d723323c570b59",
+      "source": "https://assetstore.unity.com/packages/2d/environments/pixel-art-platformer-village-props-166114",
+      "extracted": [
+        {
+          "path": "assets/sprites/props/animated_chests_cainos/TX Chest Animation.png",
+          "bytes": 28931,
+          "sha256": "dae22ea2d1f4f223ceae21fc3e3a9a8a2f1ff507fa76c8f46199ea697402b8d8"
+        },
+        {
+          "path": "assets/vfx/village_platformer_cainos/TX FX Flame.png",
+          "bytes": 8548,
+          "sha256": "aabeb5474352e52a128bf625780fe6b5752e475c96903defa317816482f5e2a0"
+        },
+        {
+          "path": "assets/vfx/village_platformer_cainos/TX FX Torch Flame.png",
+          "bytes": 3559,
+          "sha256": "06b024d5083b4030ebc263df23307ea88a3d8052270ad66072a905f0da771949"
+        },
+        {
+          "path": "assets/sprites/environments/village_platformer_cainos/tiles/TX Tileset Ground.png",
+          "bytes": 179789,
+          "sha256": "c1cf0650377a1ec8aba3fbae2d12263ff59c05e6697ba3f2fc5ce2df69fa8b22"
+        },
+        {
+          "path": "assets/sprites/environments/village_platformer_cainos/props/TX Village Props.png",
+          "bytes": 332843,
+          "sha256": "e6e0ffebc06db80292da91387ea369507426043fbaaf027b32cbc53d3f7064ec"
+        },
+        {
+          "path": "assets/sprites/environments/village_platformer_cainos/props/Changelog.txt",
+          "bytes": 699,
+          "sha256": "b21db5869433db5a533b12afff78969c6dc5ec4a13b598318498665c2ec4fb40"
+        }
+      ]
+    },
+    {
+      "archive": "Side Scroller Village Tileset Version 2.zip",
+      "sha256": "125f8e45ecea43e53107419081fce5ca73d65e658f412c93aa4b0ad563c980c1",
+      "source": "https://kalponic-studio.itch.io/side-scroller-village-tileset",
+      "extracted": [
+        {
+          "path": "assets/sprites/environments/side_scroller_village_v2/BG Elements/BG Elements_BG Mountain 1.png",
+          "bytes": 195863,
+          "sha256": "d175033fe6e84b2966c554a737bb466ac76cc8f21ed5cf8f72b0e2ba33732478"
+        },
+        {
+          "path": "assets/sprites/environments/side_scroller_village_v2/BG Elements/BG Elements_BG MOuntain 2.png",
+          "bytes": 64594,
+          "sha256": "6c64e2deedabeeb53abf03aa7e060464d1758838981b98d071e69f4300172c7d"
+        },
+        {
+          "path": "assets/sprites/environments/side_scroller_village_v2/BG Elements/BG Elements_BG MOuntain 3.png",
+          "bytes": 56990,
+          "sha256": "321141db4221a6b97cea1edee1cca8264e05612a8a2e00814a2402169bc20a98"
+        },
+        {
+          "path": "assets/sprites/environments/side_scroller_village_v2/BG Elements/BG Elements_BG- SKy.png",
+          "bytes": 177383,
+          "sha256": "24ee40b3c1485dce62211895b5887fefa3a10d68c517ae4e2b1a0639c7a60a51"
+        },
+        {
+          "path": "assets/sprites/props/side_scroller_village_v2/Big Leaves 512x512.png",
+          "bytes": 244514,
+          "sha256": "c183f2b4bc41a3278584553ad306101f5139da78e70090b1c3e663cb34e1d331"
+        },
+        {
+          "path": "assets/sprites/props/side_scroller_village_v2/Big Tree Trunks.png",
+          "bytes": 296980,
+          "sha256": "35ffb5fef5ebddf500334e92ff33197cd37310594a607a387230ef2ec975e510"
+        },
+        {
+          "path": "assets/sprites/props/side_scroller_village_v2/Bonfire.png",
+          "bytes": 7680,
+          "sha256": "2f400f017883fa7270e2062b24567ca49eef4cf205471ecab55c14e8af0753e0"
+        },
+        {
+          "path": "assets/sprites/props/side_scroller_village_v2/Clouds.png",
+          "bytes": 36231,
+          "sha256": "837368797f4db06e65d9bd444fa411572322d6f8c97269d10345eb720ff68aea"
+        },
+        {
+          "path": "assets/sprites/props/side_scroller_village_v2/House Parts n Others 512x512.png",
+          "bytes": 1447197,
+          "sha256": "46f256fa0dc37fba68a47e7ee48ceeef6e7c9630aa2ce5e90450d35d496a3cac"
+        },
+        {
+          "path": "assets/sprites/props/side_scroller_village_v2/Rocks.png",
+          "bytes": 12766,
+          "sha256": "91e7a9e8b475c9ee59c37fba0102d5e0c5740dd22abc57efc437d4a412f58820"
+        },
+        {
+          "path": "assets/sprites/props/side_scroller_village_v2/Village props 128x128.png",
+          "bytes": 233875,
+          "sha256": "bb6d940d7e69595f94eb247dc380f5fade90060d331ee1cad37338f7979be893"
+        },
+        {
+          "path": "assets/sprites/props/side_scroller_village_v2/Village Props 256x256.png",
+          "bytes": 1122513,
+          "sha256": "9bdab4495d7ecff933e344b61edf7437b2d0c434626504e84a1bd3d963a5f2eb"
+        },
+        {
+          "path": "assets/sprites/props/side_scroller_village_v2/Village Props 512x512.png",
+          "bytes": 1154881,
+          "sha256": "7d0fa6b3efc9f31b8bd7e6edd5ac661e6aadfdaeb7d8ba270e9722b2cb7922e1"
+        },
+        {
+          "path": "assets/sprites/props/side_scroller_village_v2/Village Props 64x64.png",
+          "bytes": 63119,
+          "sha256": "2615cff6d3920919347a920bece854f0427819f778a9e869daabca1fd71e043a"
+        },
+        {
+          "path": "assets/sprites/props/side_scroller_village_v2/Village Structures 1024x1024.png",
+          "bytes": 462319,
+          "sha256": "8f16a9451eeac266d58b9e62bd119d46d2dcc5a8bf1a58e3fad5a391a66f2255"
+        },
+        {
+          "path": "assets/sprites/props/side_scroller_village_v2/Wooden Beams 512x512.png",
+          "bytes": 63198,
+          "sha256": "a70a2ea3f4fc8698f5d14cee08662f7c900134ee1dd053878bb85461a39b0036"
+        },
+        {
+          "path": "assets/sprites/environments/side_scroller_village_v2/Tiles/Platformer - Ground 01.png",
+          "bytes": 8608,
+          "sha256": "160b09d67f4afc7a4468cc6eb3eababe559516515eda4118493849b9324180be"
+        },
+        {
+          "path": "assets/sprites/environments/side_scroller_village_v2/Tiles/Platformer - Ground 02.png",
+          "bytes": 17060,
+          "sha256": "d20d3048e4c7d99bc05149b998d17ec9609fc79e23536e25902718000b573a82"
+        },
+        {
+          "path": "assets/sprites/environments/side_scroller_village_v2/Tiles/Platformer - Ground 03.png",
+          "bytes": 9024,
+          "sha256": "7510ffdc394887b5e70fbe0ff1afa73b2849c5e4da02f0880c7c2d9a656f6bb9"
+        },
+        {
+          "path": "assets/sprites/environments/side_scroller_village_v2/Tiles/Platformer - Ground 04.png",
+          "bytes": 14953,
+          "sha256": "220152ba775dbc9a3998bbb69f846a460beb999532748fbd6e72bea4d7cf552c"
+        },
+        {
+          "path": "assets/sprites/environments/side_scroller_village_v2/Tiles/Platformer - Ground 05.png",
+          "bytes": 19861,
+          "sha256": "2bf620590b15e5af0a34d82602800b71501c82a273c7526b5f1e43ae75a901a6"
+        },
+        {
+          "path": "assets/sprites/environments/side_scroller_village_v2/Tiles/Platformer - Ground 06.png",
+          "bytes": 18028,
+          "sha256": "c37dd88029a74d49d545e520b1ed5034a305dde73e9879c4d576adc07550652b"
+        },
+        {
+          "path": "assets/sprites/environments/side_scroller_village_v2/Tiles/Platformer - Ground 07.png",
+          "bytes": 19754,
+          "sha256": "dfa0882bb47df52f28255eb454fd359e9f876598b02ca4e0d127b07daf493e8e"
+        },
+        {
+          "path": "assets/sprites/environments/side_scroller_village_v2/Tiles/Platformer - Ground 08.png",
+          "bytes": 15192,
+          "sha256": "57033eb2157acf5a04c5a438a6b3f7665fb6432fc1cb1d6c5dc25a8e1344b90b"
+        },
+        {
+          "path": "assets/sprites/environments/side_scroller_village_v2/Tiles/Platformer - Ground 09.png",
+          "bytes": 13567,
+          "sha256": "dbc44a57f099610e46dee12f06d434ed24bd67ed105ededbd4be7d465f87485d"
+        },
+        {
+          "path": "assets/sprites/environments/side_scroller_village_v2/Tiles/Platformer - Ground 11.png",
+          "bytes": 17867,
+          "sha256": "b5af5b5423f229cb8c677ab554e8e86c8ba3f86b054fe6d1b205727e5a176874"
+        },
+        {
+          "path": "assets/sprites/environments/side_scroller_village_v2/Tiles/Platformer - Ground 12.png",
+          "bytes": 17704,
+          "sha256": "6fb4f52a0c6ece79010d024da26659fb07c7aecf5fe872068c7eac9eeb30c92e"
+        },
+        {
+          "path": "assets/sprites/environments/side_scroller_village_v2/Tiles/Platformer - Ground 13.png",
+          "bytes": 13795,
+          "sha256": "0b37fe9e05c659b15ff8bb825978e9230ec0d868761748ef962f560ca886a9de"
+        },
+        {
+          "path": "assets/sprites/environments/side_scroller_village_v2/Tiles/Platformer-Ground 10.png",
+          "bytes": 18204,
+          "sha256": "6dea04dd273e92cfe552b8fd6944f5d6efe741a7ea832767e677b305d93b4727"
+        },
+        {
+          "path": "assets/sprites/environments/side_scroller_village_v2/Tiles/Platformer-Ground Tileset.png",
+          "bytes": 208163,
+          "sha256": "d81676dc3901b104b1e5a3434fe5c8344d560427724e1a03d410e55fc21c5559"
+        }
+      ]
+    },
+    {
+      "archive": "Animated Chests.zip",
+      "sha256": "bb5fef97a25f622c749d4ee881f3d501304b66fe37845c9e6734feecac151587",
+      "source": "https://admurin.itch.io/free-chest-animations",
+      "extracted": [
+        {
+          "path": "assets/sprites/props/animated_chests_admurin/Chests.aseprite",
+          "bytes": 19417,
+          "sha256": "87fe3c04eb087907aeeae3414d79d2a548b09b7e11e216fc9b0ff955b7de00fc"
+        },
+        {
+          "path": "assets/sprites/props/animated_chests_admurin/Chests.png",
+          "bytes": 8177,
+          "sha256": "f91cbe420e6ff84eaa6298b104bd7723e28ac76a500ee846b587e230144643d3"
+        },
+        {
+          "path": "assets/sprites/props/animated_chests_admurin/Chests_Snow.png",
+          "bytes": 11714,
+          "sha256": "bfae65a55fa624a7b87d5c6b7272176703d0ed842c5e0142e4ade9b806997d3a"
+        }
+      ]
+    },
+    {
+      "archive": "FREE - Blacksmith 2D Pixel Art.zip",
+      "sha256": "a9ddabe13ce5270ccc4c20373b35885e9eef20ff61f00e0aac190f3669677989",
+      "source": "https://xzany.itch.io/npc-characters-2d-pixel-art",
+      "extracted": [
+        {
+          "path": "assets/sprites/characters/npcs/blacksmith_mattz/License.txt",
+          "bytes": 279,
+          "sha256": "252e74b6a90a7679470ded0ac3235c1933d2b8d456d18b3ad711c2d577772440"
+        },
+        {
+          "path": "assets/sprites/characters/npcs/blacksmith_mattz/BLACKSMITH.png",
+          "bytes": 6595,
+          "sha256": "b4d09336b821d401029f964c5d3129e59de3dc205ee47e7a0aa9e184214ca714"
+        }
+      ]
+    },
+    {
+      "archive": "Green Field.zip",
+      "sha256": "8d8bb7fcbfe821809117c66f99015c8a4741995b479b5c7a87233dd4fb721bf1",
+      "source": "https://fkgcluster.itch.io/green-field-character-free",
+      "extracted": [
+        {
+          "path": "assets/sprites/environments/green_field_fkgcluster/green field.aseprite",
+          "bytes": 12676,
+          "sha256": "4af7b72371abd2ab825a2a6364144a1771c533504815e24032f0fa95f776a64a"
+        },
+        {
+          "path": "assets/sprites/environments/green_field_fkgcluster/PNG/00_sky.png",
+          "bytes": 3028,
+          "sha256": "709121a07d11f82e86eaad8fa277f0ecc2303e83f37abaa620b0bda65cd03d8a"
+        },
+        {
+          "path": "assets/sprites/environments/green_field_fkgcluster/PNG/01_back.png",
+          "bytes": 1880,
+          "sha256": "5b427865baf8b2e60b008fb33e30ae1d3b4d80eba44d1aa6b783e848615b28c4"
+        },
+        {
+          "path": "assets/sprites/environments/green_field_fkgcluster/PNG/02_cloud1.png",
+          "bytes": 2822,
+          "sha256": "41606174d09b4fe5a7c56409b58e95356c68f5bbec823bfd958d10cdd1fef16a"
+        },
+        {
+          "path": "assets/sprites/environments/green_field_fkgcluster/PNG/03_cloud2.png",
+          "bytes": 2833,
+          "sha256": "81116e8388af3397ffa7bf16a5b53e62790d7d36c3b427a07c6452e586c5daba"
+        },
+        {
+          "path": "assets/sprites/environments/green_field_fkgcluster/PNG/04_mid1.png",
+          "bytes": 1833,
+          "sha256": "10445f2f02018806720225bdaf0a832f9d72335bffc43ed93314a1dfcb892ab7"
+        },
+        {
+          "path": "assets/sprites/environments/green_field_fkgcluster/PNG/05_mid2.png",
+          "bytes": 2984,
+          "sha256": "ed41d13a380eca5874b2bf68e8c67825e5babd0de96f6b67d0a99359dc724710"
+        },
+        {
+          "path": "assets/sprites/environments/green_field_fkgcluster/PNG/06_front.png",
+          "bytes": 3641,
+          "sha256": "1d879eabbb2f31790799e2f1af1b4622950345dc69c0aa4964703240cb02b26a"
+        }
+      ]
+    },
+    {
+      "archive": "Medieval Village Asset Pack.zip",
+      "sha256": "8ab248c1340cbb8f5b9eb493bc3afbb2fe1c99077f623cb2b7e17608a509477a",
+      "source": "https://intc2748.itch.io/medieval-village-asset-pack",
+      "extracted": [
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Backgrounds/Castle_Wall.png",
+          "bytes": 12229,
+          "sha256": "a4504a722e6c12550456e8ec754d500e78d70f46e15abc3b1331edb1ef8dbbc6"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Backgrounds/Sky.png",
+          "bytes": 32773,
+          "sha256": "0a582534a5efb64bcf8044caf8b4033270f0d2cdc7dc303c0edaf74f9055a50f"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Tiles/Untitled105.png",
+          "bytes": 1792,
+          "sha256": "227d6dd352c6b87c56bb4989e374b71484ceb80bff4f3048b8bca883bb221216"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Tiles/Untitled108.png",
+          "bytes": 1460,
+          "sha256": "bcce2cf804136321a3e2465c239abaf7c71471678d2ba5a697adcfe7f59dac23"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Tiles/Dirt_Tile.png",
+          "bytes": 148,
+          "sha256": "becefd29dd5c9fa482d02b51f22057355dbcc31059e57b8dea22503d41d5d858"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Objects/Wooden_Fence.png",
+          "bytes": 778,
+          "sha256": "898e6c3efdcf18a41153c881216ff9359ff0296a0830c0b140f2131b07af1caa"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Objects/Notice_Board.png",
+          "bytes": 3313,
+          "sha256": "72477e9bf2bab17e549257ca45a9cb626ac336880e5df65bee37d9369f5daf80"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Objects/Wooden_Barrel.png",
+          "bytes": 1628,
+          "sha256": "b4aff241e0b6cdf75c4cb3dac4e002e9e7f0ea3122a9e38c7a5fcc066aefc1c6"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Objects/Tree_Stump.png",
+          "bytes": 1452,
+          "sha256": "6a6ab66b8d2679c3d4b86a3acac0f11c8620fae12d16ef3bf24fe52449344d39"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Objects/Stone.png",
+          "bytes": 455,
+          "sha256": "fe05f6b32341b15e1b932dc67b4d2626e73244692a779f7cbfb5880abfd35c62"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Medieval House/Window_2.png",
+          "bytes": 398,
+          "sha256": "4916eeb0dfe37765166ab0fce1958e2a87aebcf6d749810cb0893335e9fa57a0"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Medieval House/Window_1.png",
+          "bytes": 618,
+          "sha256": "2a123c1ea73276b56672d4e0d94062e0ccaef0c4b30bef81a1939f5f9d761c6c"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Medieval House/Roof_1.png",
+          "bytes": 5532,
+          "sha256": "8b20a2481f04e9d06eec8962b79ff5dfa22c8471a325a83f6fa3524483b13378"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Medieval House/Roof_2.png",
+          "bytes": 5485,
+          "sha256": "d4c25cfa7e618cf5ffd170a033962eb26ddd7027f23eaf490eabc9e7f5642f9d"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Medieval House/Wooden_Door.png",
+          "bytes": 1709,
+          "sha256": "8182497817e33aba262a7ffb5be77e1fd77a9d9f35fc28eebfe394b0f8ff5e14"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Medieval House/Wooden_Beam_1.png",
+          "bytes": 584,
+          "sha256": "80d560bf0ad3a466407836ab5e452c90aed27cb47c061b4b6370995bb13d4980"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Medieval House/Wooden_Beam-2.png",
+          "bytes": 441,
+          "sha256": "46073ff8dbae6394f3e5ecfcc038c9204e93eb5915786b43553dd50e34cc238d"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Medieval House/Wooden_Beam_3.png",
+          "bytes": 531,
+          "sha256": "7861c338549ed66669e980f34211ddb8f2c967d0171feb4b14dbf2423ccaba91"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Medieval House/Stone_Wall.png",
+          "bytes": 653,
+          "sha256": "fa59ca094d49cc545c9d06faf57c855bb06de89aaf6679324a2e181495a8b970"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Medieval House/House_Wall.png",
+          "bytes": 2210,
+          "sha256": "8e7630c63c26b05e5ebcdb2067bd50c437311c4815040742d0d4ee64552c5307"
+        },
+        {
+          "path": "assets/sprites/environments/medieval_village_intc2748/Preview/Medieval_Village.png",
+          "bytes": 75323,
+          "sha256": "2c58868f3e546856e95e35139d4a1bdb8341a3fa53e3deffdacac4fead1bc61f"
+        }
+      ]
+    }
+  ]
+}
