@@ -27,19 +27,8 @@ extends Control
 
 
 func _ready() -> void:
-	SupabaseManager.auth_completed.connect(_on_supabase_auth_completed)
 	login_status.hide()
 	register_status.hide()
-	%OpenLogin.pressed.connect(_show_panel.bind(login_panel))
-	%OpenRegister.pressed.connect(_show_panel.bind(register_panel))
-	%OpenSettings.pressed.connect(_show_panel.bind(settings_panel))
-	%LoginSubmit.pressed.connect(_on_login_submit)
-	%RegisterSubmit.pressed.connect(_on_register_submit)
-	google_login_button.pressed.connect(_on_google_login_pressed)
-	google_register_button.pressed.connect(_on_google_register_pressed)
-	%LoginBack.pressed.connect(_show_panel.bind(base_panel))
-	%RegisterBack.pressed.connect(_show_panel.bind(base_panel))
-	%SettingsBack.pressed.connect(_show_panel.bind(base_panel))
 	login_password.text_submitted.connect(_on_login_enter)
 	register_password.text_submitted.connect(_on_register_enter)
 	master_volume.value_changed.connect(_on_volume_changed.bind(&"Master", %MasterValue))
@@ -50,8 +39,37 @@ func _ready() -> void:
 	_sync_settings()
 	_resize_pages()
 	_show_panel(base_panel)
-	if SupabaseManager.is_authenticated:
+	# Las señales de navegación ya están declaradas en MainMenu.tscn. Conecta
+	# Supabase al final para que un fallo del autoload no deje la pantalla muda.
+	if is_instance_valid(SupabaseManager) and not SupabaseManager.auth_completed.is_connected(_on_supabase_auth_completed):
+		SupabaseManager.auth_completed.connect(_on_supabase_auth_completed)
+	if is_instance_valid(SupabaseManager) and SupabaseManager.is_authenticated:
 		_continue_to_camp.call_deferred()
+	print("[MainMenu] Listo; botones de navegación conectados desde la escena.")
+
+
+func _on_open_login_pressed() -> void:
+	_show_panel(login_panel)
+
+
+func _on_open_register_pressed() -> void:
+	_show_panel(register_panel)
+
+
+func _on_open_settings_pressed() -> void:
+	_show_panel(settings_panel)
+
+
+func _on_login_back_pressed() -> void:
+	_show_panel(base_panel)
+
+
+func _on_register_back_pressed() -> void:
+	_show_panel(base_panel)
+
+
+func _on_settings_back_pressed() -> void:
+	_show_panel(base_panel)
 
 
 func _show_panel(panel: Control) -> void:
