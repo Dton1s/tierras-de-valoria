@@ -154,12 +154,12 @@ func _build_interface() -> void:
 func _build_hud() -> Control:
 	var hud := VBoxContainer.new()
 	hud.name = "ValoriaHUD"
-	hud.add_theme_constant_override("separation", 7)
+	hud.add_theme_constant_override("separation", 4)
 	var header := HBoxContainer.new()
 	var screen_width := get_viewport_rect().size.x
 	var compact := screen_width < 640.0
 	header.name = "HUDHeader"
-	header.add_theme_constant_override("separation", 8 if compact else 12)
+	header.add_theme_constant_override("separation", 8 if compact else 16)
 	hud.add_child(header)
 	var brand := VBoxContainer.new()
 	brand.add_theme_constant_override("separation", 0)
@@ -167,15 +167,15 @@ func _build_hud() -> Control:
 	header.add_child(brand)
 	var logo := Label.new()
 	logo.text = "TIERRAS DE VALORIA"
-	logo.add_theme_font_size_override("font_size", 14 if compact else 21 if screen_width >= 800.0 else 16)
-	logo.clip_text = true
+	logo.add_theme_font_size_override("font_size", 13 if compact else 20 if screen_width >= 800.0 else 16)
+	logo.clip_text = false
 	logo.add_theme_color_override("font_color", Color(1.0, 0.91, 0.68, 1.0))
 	logo.add_theme_color_override("font_outline_color", Color(0.18, 0.09, 0.035, 1.0))
 	logo.add_theme_constant_override("outline_size", 4)
 	brand.add_child(logo)
 	var camp_subtitle := Label.new()
 	camp_subtitle.text = "REFUGIO DEL BOSQUE"
-	camp_subtitle.add_theme_font_size_override("font_size", 10)
+	camp_subtitle.add_theme_font_size_override("font_size", 9 if compact else 10)
 	camp_subtitle.add_theme_color_override("font_color", Color(0.95, 0.83, 0.58, 1.0))
 	brand.add_child(camp_subtitle)
 	var header_spacer := Control.new()
@@ -183,12 +183,12 @@ func _build_hud() -> Control:
 	header.add_child(header_spacer)
 	var profile_card := PanelContainer.new()
 	profile_card.name = "PlayerProfile"
-	profile_card.custom_minimum_size = Vector2(160, 48) if compact else Vector2(198, 54)
+	profile_card.custom_minimum_size = Vector2(144, 42) if compact else Vector2(184, 48)
 	var profile_row := HBoxContainer.new()
-	profile_row.add_theme_constant_override("separation", 7)
+	profile_row.add_theme_constant_override("separation", 5)
 	profile_card.add_child(profile_row)
 	profile_portrait = TextureRect.new()
-	profile_portrait.custom_minimum_size = Vector2(30, 36) if compact else Vector2(38, 42)
+	profile_portrait.custom_minimum_size = Vector2(26, 32) if compact else Vector2(32, 38)
 	profile_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	profile_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	profile_portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
@@ -204,36 +204,41 @@ func _build_hud() -> Control:
 	profile_copy.add_child(profile_name_label)
 	profile_level_label = Label.new()
 	profile_level_label.text = "Nivel 1 · Héroe"
-	profile_level_label.add_theme_font_size_override("font_size", 11)
+	profile_level_label.add_theme_font_size_override("font_size", 9 if compact else 11)
 	profile_level_label.add_theme_color_override("font_color", Color(0.34, 0.22, 0.14, 1.0))
 	profile_copy.add_child(profile_level_label)
 	var profile_settings := Button.new()
-	profile_settings.text = "Ajustes"
-	profile_settings.custom_minimum_size = Vector2(48, 34) if compact else Vector2(62, 38)
+	profile_settings.text = "⚙"
+	profile_settings.tooltip_text = "Ajustes de cuenta y juego"
+	profile_settings.custom_minimum_size = Vector2(32, 30) if compact else Vector2(36, 34)
+	profile_settings.add_theme_font_size_override("font_size", 18)
 	profile_settings.pressed.connect(_open_settings)
 	profile_row.add_child(profile_settings)
 	header.add_child(profile_card)
 	currency_grid = GridContainer.new()
 	currency_grid.name = "CurrencyGrid"
-	currency_grid.columns = 4 if get_viewport_rect().size.x >= 1180.0 else 2
-	currency_grid.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	currency_grid.add_theme_constant_override("h_separation", 8)
-	currency_grid.add_theme_constant_override("v_separation", 6)
+	currency_grid.columns = 4 if screen_width >= 440.0 else 2
+	currency_grid.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	currency_grid.add_theme_constant_override("h_separation", 12 if screen_width >= 640.0 else 5)
+	currency_grid.add_theme_constant_override("v_separation", 2)
 	hud.add_child(currency_grid)
 	var currencies := [
-		["coins", "Oro"], ["tickets", "Tickets"],
-		["diamonds", "Diamantes"], ["premium_tickets", "Especiales"],
+		["coins", "Oro"], ["tickets", "Tickets gacha"],
+		["diamonds", "Diamantes"], ["premium_tickets", "Tickets especiales"],
 	]
 	for item in currencies:
-		var badge := PanelContainer.new()
-		badge.custom_minimum_size = Vector2(142, 46) if get_viewport_rect().size.x >= 640.0 else Vector2(128, 42)
+		var badge := HBoxContainer.new()
+		badge.custom_minimum_size = Vector2(70, 30) if screen_width >= 640.0 else Vector2(62, 28)
+		badge.tooltip_text = str(item[1])
+		badge.add_theme_constant_override("separation", 4)
+		badge.alignment = BoxContainer.ALIGNMENT_BEGIN
 		var badge_content := HBoxContainer.new()
-		badge_content.add_theme_constant_override("separation", 6)
+		badge_content.add_theme_constant_override("separation", 4)
 		badge_content.alignment = BoxContainer.ALIGNMENT_CENTER
 		badge.add_child(badge_content)
 		var icon := TextureRect.new()
 		icon.texture = load(str(CURRENCY_ICON_PATHS[item[0]]))
-		icon.custom_minimum_size = Vector2(28, 28)
+		icon.custom_minimum_size = Vector2(22, 22) if screen_width >= 640.0 else Vector2(20, 20)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
@@ -241,8 +246,11 @@ func _build_hud() -> Control:
 		badge_content.add_child(icon)
 		var label := Label.new()
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		label.text = "%s  0" % item[1]
-		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		label.text = "0"
+		label.add_theme_font_size_override("font_size", 12 if screen_width >= 640.0 else 10)
+		label.add_theme_color_override("font_color", Color(1.0, 0.94, 0.75, 1.0))
+		label.add_theme_color_override("font_outline_color", Color(0.12, 0.08, 0.03, 1.0))
+		label.add_theme_constant_override("outline_size", 3)
 		badge_content.add_child(label)
 		currency_grid.add_child(badge)
 		currency_labels[item[0]] = label
@@ -639,7 +647,9 @@ func _build_camp() -> void:
 
 func _on_viewport_resized() -> void:
 	if is_instance_valid(currency_grid):
-		currency_grid.columns = 4 if get_viewport_rect().size.x >= 1180.0 else 2
+		var width := get_viewport_rect().size.x
+		currency_grid.columns = 4 if width >= 440.0 else 2
+		currency_grid.add_theme_constant_override("h_separation", 12 if width >= 640.0 else 5)
 	if not camp_operational or not is_instance_valid(camp_points):
 		return
 	for child in camp_points.get_children():
@@ -649,21 +659,31 @@ func _on_viewport_resized() -> void:
 
 func _populate_camp_world() -> void:
 	var viewport_width := get_viewport_rect().size.x
+	var viewport_height := get_viewport_rect().size.y
 	var compact := viewport_width < 640.0
 	var sleeping_hero := _selected_hero()
-	var hotspot_size := Vector2(112, 122) if compact else Vector2(176, 148)
-	var bed_anchor := Vector2(0.28, 0.37) if compact else Vector2(0.67, 0.39)
-	var chest_anchor := Vector2(0.72, 0.37) if compact else Vector2(0.84, 0.67)
-	var pve_anchor := Vector2(0.17, 0.73) if compact else Vector2(0.15, 0.65)
-	var pvp_anchor := Vector2(0.50, 0.73) if compact else Vector2(0.33, 0.39)
-	var gacha_anchor := Vector2(0.83, 0.73) if compact else Vector2(0.50, 0.69)
-	var medium := viewport_width < 1100.0 and not compact
-	if medium:
-		bed_anchor = Vector2(0.33, 0.38)
-		chest_anchor = Vector2(0.67, 0.38)
-		pve_anchor = Vector2(0.18, 0.73)
-		pvp_anchor = Vector2(0.50, 0.73)
-		gacha_anchor = Vector2(0.82, 0.73)
+	var world_scale := clampf(minf(viewport_width / 1152.0, viewport_height / 720.0), 0.62, 1.0)
+	var hotspot_size := Vector2(144, 114) * world_scale if compact else Vector2(166, 124) * world_scale
+	var bed_anchor := Vector2(0.66, 0.43)
+	var chest_anchor := Vector2(0.85, 0.76)
+	var pve_anchor := Vector2(0.16, 0.73)
+	var pvp_anchor := Vector2(0.34, 0.53)
+	var gacha_anchor := Vector2(0.52, 0.75)
+	if compact:
+		# En móviles se usan dos filas para que los cinco puntos mantengan áreas
+		# táctiles separadas y no invadan la cabecera de recursos.
+		bed_anchor = Vector2(0.25, 0.43)
+		chest_anchor = Vector2(0.75, 0.43)
+		pve_anchor = Vector2(0.25, 0.75)
+		pvp_anchor = Vector2(0.75, 0.75)
+		gacha_anchor = Vector2(0.50, 0.91)
+		hotspot_size = Vector2(112, 94) * world_scale
+	elif viewport_width < 900.0:
+		bed_anchor = Vector2(0.28, 0.45)
+		chest_anchor = Vector2(0.76, 0.45)
+		pve_anchor = Vector2(0.17, 0.74)
+		pvp_anchor = Vector2(0.50, 0.68)
+		gacha_anchor = Vector2(0.83, 0.74)
 	_add_location_hotspot("Cama del héroe", "EXP AFK · Descansar", _make_bed_visual(_hero_portrait_texture(sleeping_hero), compact), _open_bed_rewards, bed_anchor, hotspot_size)
 	_add_location_hotspot("Cofre del Alba", "Oro · Recompensas AFK", _make_sprite_visual(load(CAMP_CHEST_PATH) as Texture2D, Vector2(78, 72) if compact else Vector2(100, 92)), _open_chest_rewards, chest_anchor, hotspot_size)
 	_add_location_hotspot("Gólem del bosque", "Aventura PvE · Fases", _make_sprite_visual(_pve_enemy_texture(), Vector2(70, 80) if compact else Vector2(92, 104)), _open_pve, pve_anchor, hotspot_size)
@@ -697,36 +717,25 @@ func _add_location_hotspot(title: String, subtitle: String, visual: Control, cal
 	var stack := VBoxContainer.new()
 	stack.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	stack.alignment = BoxContainer.ALIGNMENT_CENTER
-	stack.add_theme_constant_override("separation", 4)
+	stack.add_theme_constant_override("separation", 0)
 	stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(stack)
-	visual.custom_minimum_size.y = hotspot_size.y - 52.0
+	visual.custom_minimum_size.y = hotspot_size.y - 30.0
 	visual.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	visual.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	stack.add_child(visual)
-	var caption := PanelContainer.new()
-	caption.custom_minimum_size = Vector2(hotspot_size.x - 8.0, 42 if hotspot_size.x > 140.0 else 34)
-	caption.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var caption_content := VBoxContainer.new()
-	caption_content.add_theme_constant_override("separation", 0)
-	caption_content.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	caption.add_child(caption_content)
 	var title_label := Label.new()
 	title_label.text = title
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_label.add_theme_font_size_override("font_size", 14 if hotspot_size.x > 140.0 else 10)
-	title_label.clip_text = true
+	title_label.add_theme_font_size_override("font_size", 12 if hotspot_size.x > 140.0 else 9)
+	title_label.add_theme_color_override("font_color", Color(1.0, 0.94, 0.78, 1.0))
+	title_label.add_theme_color_override("font_outline_color", Color(0.11, 0.08, 0.04, 1.0))
+	title_label.add_theme_constant_override("outline_size", 4)
+	title_label.clip_text = false
+	title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	caption_content.add_child(title_label)
-	var subtitle_label := Label.new()
-	subtitle_label.text = subtitle
-	subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	subtitle_label.add_theme_font_size_override("font_size", 9 if hotspot_size.x > 140.0 else 7)
-	subtitle_label.clip_text = true
-	subtitle_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	caption_content.add_child(subtitle_label)
-	stack.add_child(caption)
+	title_label.custom_minimum_size.x = hotspot_size.x - 8.0
+	stack.add_child(title_label)
 	camp_points.add_child(button)
 
 
@@ -746,50 +755,37 @@ func _make_sprite_visual(texture: Texture2D, dimensions: Vector2) -> Control:
 
 func _make_bed_visual(hero_texture: Texture2D, compact := false) -> Control:
 	var bed_visual := Control.new()
-	bed_visual.custom_minimum_size = Vector2(104, 78) if compact else Vector2(124, 88)
-	var bed := PanelContainer.new()
-	bed.custom_minimum_size = Vector2(104, 78) if compact else Vector2(124, 88)
-	bed.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var bed_size := Vector2(96, 56) if compact else Vector2(118, 64)
+	bed_visual.custom_minimum_size = bed_size
+	var bed := ColorRect.new()
+	bed.color = Color(0.30, 0.16, 0.08, 1.0)
+	bed.custom_minimum_size = bed_size
 	bed.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var bed_style := StyleBoxFlat.new()
-	bed_style.bg_color = Color(0.29, 0.16, 0.09, 0.98)
-	bed_style.border_color = Color(0.88, 0.66, 0.34, 1.0)
-	bed_style.set_border_width_all(3)
-	bed_style.set_corner_radius_all(12)
-	bed_style.content_margin_left = 5
-	bed_style.content_margin_top = 5
-	bed_style.content_margin_right = 5
-	bed_style.content_margin_bottom = 5
-	bed.add_theme_stylebox_override("panel", bed_style)
-	var mattress := HBoxContainer.new()
-	mattress.add_theme_constant_override("separation", 4)
+	bed_visual.add_child(bed)
+	var mattress := ColorRect.new()
+	mattress.color = Color(0.91, 0.77, 0.54, 1.0)
+	mattress.position = Vector2(5, 5)
+	mattress.size = bed_size - Vector2(10, 14)
 	mattress.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bed.add_child(mattress)
-	var headboard := ColorRect.new()
-	headboard.color = Color(0.61, 0.32, 0.13, 1.0)
-	headboard.custom_minimum_size = Vector2(12, 58) if compact else Vector2(15, 66)
-	headboard.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	mattress.add_child(headboard)
-	var pillow := PanelContainer.new()
-	pillow.custom_minimum_size = Vector2(28, 54) if compact else Vector2(36, 62)
-	var pillow_style := StyleBoxFlat.new()
-	pillow_style.bg_color = Color(0.97, 0.86, 0.65, 1.0)
-	pillow_style.set_corner_radius_all(10)
-	pillow.add_theme_stylebox_override("panel", pillow_style)
+	bed_visual.add_child(mattress)
+	var pillow := ColorRect.new()
+	pillow.color = Color(1.0, 0.92, 0.73, 1.0)
+	pillow.position = Vector2(10, 10)
+	pillow.size = Vector2(22, bed_size.y - 24)
 	pillow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	mattress.add_child(pillow)
+	bed_visual.add_child(pillow)
 	var sleeper := TextureRect.new()
 	sleeper.texture = hero_texture
-	sleeper.custom_minimum_size = Vector2(46, 56) if compact else Vector2(54, 64)
+	sleeper.custom_minimum_size = Vector2(38, 48) if compact else Vector2(46, 56)
+	sleeper.position = Vector2(30, 4)
 	sleeper.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	sleeper.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	sleeper.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	sleeper.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	mattress.add_child(sleeper)
-	bed_visual.add_child(bed)
+	bed_visual.add_child(sleeper)
 	var sleep_letters := Label.new()
 	sleep_letters.text = "Z z"
-	sleep_letters.position = Vector2(78, -2) if not compact else Vector2(65, -2)
+	sleep_letters.position = Vector2(bed_size.x - 20, -8)
 	sleep_letters.add_theme_font_size_override("font_size", 15 if not compact else 11)
 	sleep_letters.add_theme_color_override("font_color", Color(1.0, 0.92, 0.66, 1.0))
 	sleep_letters.add_theme_color_override("font_outline_color", Color(0.18, 0.1, 0.05, 1.0))
@@ -800,54 +796,17 @@ func _make_bed_visual(hero_texture: Texture2D, compact := false) -> Control:
 
 
 func _make_gacha_machine_visual(compact := false) -> Control:
-	var machine := PanelContainer.new()
-	machine.custom_minimum_size = Vector2(102, 84) if compact else Vector2(116, 96)
+	var machine := CenterContainer.new()
+	machine.custom_minimum_size = Vector2(92, 82) if compact else Vector2(110, 96)
 	machine.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var frame_style := StyleBoxFlat.new()
-	frame_style.bg_color = Color(0.31, 0.16, 0.33, 0.98)
-	frame_style.border_color = Color(0.92, 0.71, 0.37, 1.0)
-	frame_style.set_border_width_all(3)
-	frame_style.set_corner_radius_all(15)
-	frame_style.content_margin_left = 7
-	frame_style.content_margin_top = 4
-	frame_style.content_margin_right = 7
-	frame_style.content_margin_bottom = 5
-	machine.add_theme_stylebox_override("panel", frame_style)
-	var machine_content := VBoxContainer.new()
-	machine_content.add_theme_constant_override("separation", 2)
-	machine_content.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	machine.add_child(machine_content)
-	var machine_title := Label.new()
-	machine_title.text = "GACHA"
-	machine_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	machine_title.add_theme_font_size_override("font_size", 10)
-	machine_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	machine_content.add_child(machine_title)
-	var portal_window := PanelContainer.new()
-	portal_window.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	portal_window.custom_minimum_size = Vector2(62, 47) if compact else Vector2(72, 55)
-	portal_window.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var glass_style := StyleBoxFlat.new()
-	glass_style.bg_color = Color(0.08, 0.13, 0.27, 0.96)
-	glass_style.border_color = Color(0.56, 0.78, 1.0, 1.0)
-	glass_style.set_border_width_all(2)
-	glass_style.set_corner_radius_all(22)
-	portal_window.add_theme_stylebox_override("panel", glass_style)
 	var portal_icon := TextureRect.new()
 	portal_icon.texture = load(CAMP_GACHA_PORTAL_PATH)
-	portal_icon.custom_minimum_size = Vector2(46, 41) if compact else Vector2(54, 48)
+	portal_icon.custom_minimum_size = Vector2(72, 72) if compact else Vector2(92, 92)
 	portal_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portal_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	portal_icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	portal_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	portal_window.add_child(portal_icon)
-	machine_content.add_child(portal_window)
-	var machine_base := ColorRect.new()
-	machine_base.color = Color(0.91, 0.61, 0.19, 1.0)
-	machine_base.custom_minimum_size = Vector2(38, 5)
-	machine_base.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	machine_base.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	machine_content.add_child(machine_base)
+	machine.add_child(portal_icon)
 	return machine
 
 
@@ -1220,9 +1179,8 @@ func _save_and_refresh() -> void:
 
 
 func _update_hud() -> void:
-	var captions := {"coins": "Oro", "tickets": "Tickets", "diamonds": "Diamantes", "premium_tickets": "Especiales"}
 	for key in currency_labels:
-		currency_labels[key].text = "%s  %s" % [captions[key], _format_number(int(profile.get(key, 0)))]
+		currency_labels[key].text = _format_number(int(profile.get(key, 0)))
 	if is_instance_valid(profile_name_label):
 		var nickname := str(profile.get("nickname", account_name)).strip_edges()
 		profile_name_label.text = nickname if not nickname.is_empty() else account_name
