@@ -54,10 +54,13 @@ var camp_operational := false
 var status_label: Label
 var page_host: CenterContainer
 var page_scroll: ScrollContainer
+var ui_root: Control
 var camp_world: Control
 var camp_points: Control
 var camp_modal_shade: ColorRect
 var platformer_stage: Node2D
+var camp_background: TextureRect
+var camp_background_shade: ColorRect
 var currency_hud: Control
 var currency_grid: GridContainer
 var currency_labels: Dictionary = {}
@@ -103,24 +106,40 @@ func _ready() -> void:
 
 
 func _build_interface() -> void:
-	var background := TextureRect.new()
-	background.name = "ForestBackground"
-	background.texture = load(BACKGROUND_PATH)
-	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(background)
-	var shade := ColorRect.new()
-	shade.color = Color(0.04, 0.08, 0.07, 0.42)
-	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(shade)
+	camp_background = TextureRect.new()
+	camp_background.name = "OnboardingForestBackground"
+	camp_background.texture = load(BACKGROUND_PATH)
+	camp_background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	camp_background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	camp_background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	camp_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(camp_background)
+	camp_background_shade = ColorRect.new()
+	camp_background_shade.name = "OnboardingForestShade"
+	camp_background_shade.color = Color(0.04, 0.08, 0.07, 0.42)
+	camp_background_shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	camp_background_shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(camp_background_shade)
 	camp_world = $CampWorld
 	camp_points = $CampWorld/PointsOfInterest
 	camp_modal_shade = $CampWorld/ModalShade
 	camp_world.hide()
 	camp_modal_shade.hide()
+	var ui_canvas := CanvasLayer.new()
+	ui_canvas.name = "InterfaceCanvas"
+	ui_canvas.layer = 2
+	add_child(ui_canvas)
+	ui_root = Control.new()
+	ui_root.name = "InterfaceRoot"
+	ui_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	ui_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ui_canvas.add_child(ui_root)
+	camp_world.remove_child(camp_modal_shade)
+	ui_root.add_child(camp_modal_shade)
+	camp_modal_shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	camp_modal_shade.z_index = -1
+	camp_modal_shade.color = Color(0.015, 0.025, 0.02, 0.58)
+	camp_modal_shade.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var margin := MarginContainer.new()
 	margin.name = "SafeArea"
@@ -132,7 +151,7 @@ func _build_interface() -> void:
 	margin.add_theme_constant_override("margin_top", 18)
 	margin.add_theme_constant_override("margin_right", horizontal_margin)
 	margin.add_theme_constant_override("margin_bottom", 18)
-	add_child(margin)
+	ui_root.add_child(margin)
 	var layout := VBoxContainer.new()
 	layout.name = "MainLayout"
 	layout.add_theme_constant_override("separation", 14)
@@ -268,7 +287,7 @@ func _build_hud() -> Control:
 	return hud
 
 
-func _panel(title: String, min_size := Vector2(440, 0)) -> Dictionary:
+func _panel(title: String, min_size := Vector2(440, 0), close_enabled := true) -> Dictionary:
 	var panel := PanelContainer.new()
 	var available_width := maxf(280.0, get_viewport_rect().size.x - 52.0)
 	panel.custom_minimum_size = Vector2(minf(min_size.x, available_width), min_size.y)
@@ -280,14 +299,38 @@ func _panel(title: String, min_size := Vector2(440, 0)) -> Dictionary:
 		margin.add_theme_constant_override("margin_" + side, panel_margin)
 	panel.add_child(margin)
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 12)
+	box.add_theme_constant_override("separation", 9)
 	margin.add_child(box)
+	var heading_row := HBoxContainer.new()
+	heading_row.add_theme_constant_override("separation", 6)
+	box.add_child(heading_row)
+	var title_spacer := Control.new()
+	title_spacer.custom_minimum_size.x = 34
+	heading_row.add_child(title_spacer)
 	var heading := Label.new()
 	heading.text = title
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	heading.add_theme_font_size_override("font_size", 26)
-	box.add_child(heading)
+	heading.add_theme_font_size_override("font_size", 23)
+	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	heading_row.add_child(heading)
+	if close_enabled:
+		var close_button := Button.new()
+		close_button.name = "ClosePopup"
+		close_button.text = "X"
+		close_button.tooltip_text = "Cerrar y volver al campamento"
+		close_button.custom_minimum_size = Vector2(34, 32)
+		close_button.pressed.connect(_close_popup)
+		heading_row.add_child(close_button)
+	else:
+		var close_spacer := Control.new()
+		close_spacer.custom_minimum_size.x = 34
+		heading_row.add_child(close_spacer)
 	return {"panel": panel, "box": box}
+
+
+func _close_popup() -> void:
+	if camp_operational:
+		_build_camp()
 
 
 func _add_body(box: VBoxContainer, text: String) -> Label:
@@ -322,6 +365,10 @@ func _show_page(new_page: Page, panel: Control) -> void:
 		status_label.visible = camp_operational
 	if is_instance_valid(camp_world):
 		camp_world.visible = camp_operational
+	if is_instance_valid(camp_background):
+		camp_background.visible = not camp_operational
+	if is_instance_valid(camp_background_shade):
+		camp_background_shade.visible = not camp_operational
 	if is_instance_valid(camp_modal_shade):
 		camp_modal_shade.visible = camp_operational
 	if is_instance_valid(page_scroll):
@@ -470,7 +517,7 @@ func _hero_portrait_texture(hero: Dictionary) -> Texture2D:
 
 
 func _show_nickname() -> void:
-	var view := _panel("Elige tu nombre", Vector2(460, 0))
+	var view := _panel("Elige tu nombre", Vector2(460, 0), false)
 	_add_body(view.box, "Usa entre 4 y 12 letras o números, sin espacios ni símbolos.")
 	nickname_input = LineEdit.new()
 	nickname_input.placeholder_text = "Nombre de aventurero"
@@ -551,7 +598,7 @@ func _accept_nickname_and_choose_hero(nickname: String) -> void:
 
 
 func _show_hero_choice() -> void:
-	var view := _panel("Elige a tu primer héroe", Vector2(800, 0))
+	var view := _panel("Elige a tu primer héroe", Vector2(800, 0), false)
 	_add_body(view.box, "Tres compañeros comunes esperan comenzar contigo esta aventura.")
 	hero_buttons.clear()
 	var cards := GridContainer.new()
@@ -645,6 +692,8 @@ func _build_camp() -> void:
 	currency_hud.show()
 	page_scroll.hide()
 	camp_modal_shade.hide()
+	camp_background.hide()
+	camp_background_shade.hide()
 	camp_world.show()
 	camp_world.modulate = Color(1, 1, 1, 0)
 	if camp_points.get_child_count() == 0:
@@ -676,7 +725,9 @@ func _populate_camp_world() -> void:
 	platformer_stage.set_script(PLATFORMER_STAGE_SCRIPT)
 	# Configura el héroe antes de añadir el nodo: _ready() construye el escenario
 	# y crea al personaje, así evitamos cargar dos veces todas sus texturas.
-	platformer_stage.set("active_hero_id", str(_selected_hero().get("id", "guardiana")))
+	var selected_hero := _selected_hero()
+	platformer_stage.set("active_hero_id", str(selected_hero.get("id", "guardiana")))
+	platformer_stage.set("active_hero_texture", _hero_portrait_texture(selected_hero))
 	camp_points.add_child(platformer_stage)
 	platformer_stage.connect("interaction_requested", _on_platformer_interaction)
 
@@ -1119,7 +1170,7 @@ func _summon(currency: String) -> void:
 
 
 func _open_settings() -> void:
-	var view := _panel("Cuenta y ajustes", Vector2(480, 0))
+	var view := _panel("Cuenta y ajustes", Vector2(420, 0))
 	_add_body(view.box, "Aventurero: %s\nCuenta Supabase: %s\nID: %s" % [str(profile.get("nickname", account_name)), str(_supabase_manager.current_user.get("email", "")), account_uid])
 	var google_linked: bool = _supabase_manager.has_google_identity()
 	_add_body(view.box, "Cuenta de Google: %s" % ("Enlazada" if google_linked else "Sin enlazar"))

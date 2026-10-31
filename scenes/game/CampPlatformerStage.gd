@@ -1,44 +1,31 @@
 extends Node2D
-## Escenario horizontal del refugio. Las coordenadas están diseñadas sobre 1152x720
+## Escenario horizontal del refugio. Las coordenadas están diseñadas sobre 1280x720
 ## y se escalan uniformemente para conservar la proporción en móvil y escritorio.
 
 signal interaction_requested(kind: String, destination: Vector2)
 
-const BASE_SIZE := Vector2(1152.0, 720.0)
-const GREEN_FIELD := "res://assets/sprites/environments/green_field_fkgcluster/PNG/"
-const SIDE_TILES := "res://assets/sprites/environments/side_scroller_village_v2/Tiles/"
-const MEDIEVAL := "res://assets/sprites/environments/medieval_village_intc2748/Medieval House/"
+const BASE_SIZE := Vector2(1280.0, 720.0)
+const VILLAGE_BACKGROUND := "res://assets/sprites/environments/medieval_village_intc2748/Preview/Medieval_Village.png"
 const CHEST_SHEET := "res://assets/sprites/props/animated_chests_admurin/Chests.png"
 const BLACKSMITH_SHEET := "res://assets/sprites/characters/npcs/blacksmith_mattz/BLACKSMITH.png"
+const GOBLIN_PATH := "res://assets/sprites/enemies/craftpix-net-228980-free-top-down-goblin-char__Front - Idle_000__00170a9b3881.png"
+const GOBLIN_REGION := Rect2(112, 54, 288, 352)
+const GROUND_LINE := 632.0
+const INTERIOR_GROUND_LINE := 515.0
+const HERO_RENDER_HEIGHT := 146.0
+const ACTOR_RENDER_HEIGHT := 134.0
 
-const RUN_FRAMES := {
-	"guardiana": [
-		"res://assets/sprites/characters/craftpix-net-469596-free-chibi-valkyrie-chara__0_Valkyrie_Walking_000__40f3482e3155.png",
-		"res://assets/sprites/characters/craftpix-net-469596-free-chibi-valkyrie-chara__0_Valkyrie_Walking_001__5e37942bb2b8.png",
-		"res://assets/sprites/characters/craftpix-net-469596-free-chibi-valkyrie-chara__0_Valkyrie_Walking_002__e3e7cd8c76bb.png",
-		"res://assets/sprites/characters/craftpix-net-469596-free-chibi-valkyrie-chara__0_Valkyrie_Walking_003__8f426bcd31b7.png",
-		"res://assets/sprites/characters/craftpix-net-469596-free-chibi-valkyrie-chara__0_Valkyrie_Walking_004__9e1fda4305e4.png",
-		"res://assets/sprites/characters/craftpix-net-469596-free-chibi-valkyrie-chara__0_Valkyrie_Walking_005__a1ab222e2eb3.png",
-	],
-	"espadachin": [
-		"res://assets/sprites/characters/Cartoon Characters by Rgs_dev__run_0__11f302d8be96.png",
-		"res://assets/sprites/characters/Cartoon Characters by Rgs_dev__run_1__580aae8ae07b.png",
-		"res://assets/sprites/characters/Cartoon Characters by Rgs_dev__run_2__9f1916809126.png",
-		"res://assets/sprites/characters/Cartoon Characters by Rgs_dev__run_3__c2df0caeac93.png",
-	],
-	"explorador": [
-		"res://assets/sprites/characters/Cartoon Characters by Rgs_dev__run_0__638502635735.png",
-		"res://assets/sprites/characters/Cartoon Characters by Rgs_dev__run_1__a883e4d3311a.png",
-		"res://assets/sprites/characters/Cartoon Characters by Rgs_dev__run_2__28126e7c324a.png",
-		"res://assets/sprites/characters/Cartoon Characters by Rgs_dev__run_3__e318a5e6fcac.png",
-	],
-}
 
 var world_root: Node2D
 var hero: AnimatedSprite2D
 var inside_house := false
 var base_scale := 1.0
 var active_hero_id := "guardiana"
+var active_hero_texture: Texture2D
+var movement_tween: Tween
+var hero_bob_tween: Tween
+var interaction_bounds: Array[Rect2] = []
+var was_moving_with_keyboard := false
 
 
 func _ready() -> void:
@@ -63,15 +50,18 @@ func set_hero(hero_id: String) -> void:
 	active_hero_id = hero_id
 	if is_instance_valid(hero):
 		hero.queue_free()
+	if is_instance_valid(hero_bob_tween):
+		hero_bob_tween.kill()
 	hero = AnimatedSprite2D.new()
 	hero.name = "PlayerHero"
-	hero.sprite_frames = _make_hero_frames(hero_id)
-	hero.animation = "walk"
-	hero.position = Vector2(480, 558)
-	hero.scale = Vector2(0.22, 0.22) if hero_id == "guardiana" else Vector2(0.40, 0.40)
+	hero.sprite_frames = _make_hero_frames(hero_id, active_hero_texture)
+	hero.animation = "idle"
+	hero.scale = Vector2.ONE * HERO_RENDER_HEIGHT / maxf(1.0, hero.sprite_frames.get_frame_texture("idle", 0).get_size().y)
+	hero.position = Vector2(565, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5)
 	hero.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	world_root.add_child(hero)
 	hero.play("idle")
+	_animate_hero_motion(false)
 	# El héroe se dibuja delante de objetos y fondo, pero bajo los rótulos interactivos.
 	hero.z_index = 20
 
@@ -81,27 +71,83 @@ func move_hero_to(destination: Vector2, arrived: Callable) -> void:
 		if arrived.is_valid():
 			arrived.call()
 		return
-	hero.flip_h = destination.x < hero.position.x
+	if is_instance_valid(movement_tween):
+		movement_tween.kill()
+	var target := Vector2(clampf(destination.x, 52.0, BASE_SIZE.x - 52.0), GROUND_LINE - HERO_RENDER_HEIGHT * 0.5)
+	hero.flip_h = target.x < hero.position.x
 	hero.play("walk")
-	var tween := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(hero, "position", destination, maxf(0.22, hero.position.distance_to(destination) / 260.0))
-	tween.finished.connect(func() -> void:
+	_animate_hero_motion(true)
+	was_moving_with_keyboard = false
+	movement_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	movement_tween.tween_property(hero, "position", target, maxf(0.3, hero.position.distance_to(target) / 300.0))
+	movement_tween.finished.connect(func() -> void:
 		if is_instance_valid(hero):
 			hero.play("idle")
+			_animate_hero_motion(false)
 		if arrived.is_valid():
 			arrived.call()
 	)
+
+
+func _process(delta: float) -> void:
+	if not is_instance_valid(hero) or inside_house:
+		return
+	var direction := Input.get_axis("ui_left", "ui_right")
+	if not is_zero_approx(direction):
+		if is_instance_valid(movement_tween):
+			movement_tween.kill()
+		if not was_moving_with_keyboard:
+			hero.play("walk")
+			_animate_hero_motion(true)
+		hero.position.x = clampf(hero.position.x + direction * 260.0 * delta, 52.0, BASE_SIZE.x - 52.0)
+		hero.flip_h = direction < 0.0
+		was_moving_with_keyboard = true
+	elif was_moving_with_keyboard:
+		hero.play("idle")
+		_animate_hero_motion(false)
+		was_moving_with_keyboard = false
+
+
+func _animate_hero_motion(walking: bool) -> void:
+	if not is_instance_valid(hero):
+		return
+	if is_instance_valid(hero_bob_tween):
+		hero_bob_tween.kill()
+	hero.offset = Vector2.ZERO
+	var amplitude := 4.0 if walking else 1.5
+	var step_duration := 0.15 if walking else 0.55
+	hero_bob_tween = create_tween().set_loops()
+	hero_bob_tween.tween_property(hero, "offset", Vector2(0, -amplitude), step_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	hero_bob_tween.tween_property(hero, "offset", Vector2.ZERO, step_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if inside_house or not is_instance_valid(hero):
+		return
+	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+		return
+	var world_position := world_root.to_local(get_global_mouse_position())
+	for bounds in interaction_bounds:
+		if bounds.has_point(world_position):
+			return
+	if world_position.y >= GROUND_LINE - HERO_RENDER_HEIGHT:
+		move_hero_to(Vector2(world_position.x, hero.position.y), Callable())
 
 
 func set_interior(enabled: bool) -> void:
 	inside_house = enabled
 	_build_world()
 	if is_instance_valid(hero):
-		hero.position = Vector2(570, 560) if enabled else Vector2(480, 558)
+		hero.position = Vector2(570, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5) if enabled else Vector2(565, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5)
 		hero.play("idle")
 
 
 func _build_world() -> void:
+	if is_instance_valid(movement_tween):
+		movement_tween.kill()
+	if is_instance_valid(hero_bob_tween):
+		hero_bob_tween.kill()
+	interaction_bounds.clear()
 	for child in world_root.get_children():
 		child.queue_free()
 	hero = null
@@ -114,21 +160,18 @@ func _build_world() -> void:
 
 
 func _build_exterior() -> void:
-	_add_green_field_layer("00_sky.png", Vector2(576, 360), 0)
-	_add_green_field_layer("01_back.png", Vector2(576, 360), 1)
-	_add_green_field_layer("02_cloud1.png", Vector2(576, 330), 2)
-	_add_green_field_layer("03_cloud2.png", Vector2(576, 345), 3)
-	_add_green_field_layer("04_mid1.png", Vector2(576, 360), 4)
-	_add_green_field_layer("05_mid2.png", Vector2(576, 385), 5)
-	_add_exterior_house()
-	_add_village_props()
-	_add_ground()
-	_add_blacksmith()
+	# This pack preview is a complete side-view village: sky, house, and one
+	# continuous walkable floor. It avoids mixing the old top-down forest with
+	# floating platform tiles from a different set.
+	var backdrop := _add_sprite(VILLAGE_BACKGROUND, Vector2(640, 360), Vector2(1280.0 / 576.0, 720.0 / 324.0), -30)
+	backdrop.name = "VillageScene"
 	_add_goblin()
 	_add_knight()
 	_add_gacha_forge()
+	_add_blacksmith()
+	_add_exterior_chest()
 	_add_player()
-	_add_interaction("door", Vector2(850, 548), Vector2(95, 105), "Entrar en la casa")
+	_add_interaction("door", Vector2(850, GROUND_LINE - 68.0), Vector2(90, 128), "Entrar en la casa", Vector2(800, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -148.0)
 
 
 func _build_interior() -> void:
@@ -152,61 +195,9 @@ func _build_interior() -> void:
 	world_root.add_child(floor)
 	_add_house_furniture()
 	_add_player()
-	_add_interaction("bed", Vector2(350, 545), Vector2(210, 120), "Cama · Experiencia AFK")
-	_add_interaction("chest", Vector2(790, 557), Vector2(116, 100), "Cofre · Recompensas AFK")
-	_add_interaction("door", Vector2(1010, 540), Vector2(100, 140), "Salir al campamento")
-
-
-func _add_green_field_layer(file_name: String, at: Vector2, layer: int) -> void:
-	var texture := load(GREEN_FIELD + file_name) as Texture2D
-	if texture == null:
-		return
-	var sprite := Sprite2D.new()
-	sprite.texture = texture
-	sprite.position = at
-	sprite.scale = Vector2(3.6, 3.6)
-	sprite.centered = true
-	sprite.z_index = layer - 20
-	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	world_root.add_child(sprite)
-
-
-func _add_exterior_house() -> void:
-	# Casa modular hecha con piezas originales del pack Medieval Village.
-	var wall := _add_sprite(MEDIEVAL + "House_Wall.png", Vector2(850, 480), Vector2(2.4, 1.75), -2)
-	wall.name = "HouseWall"
-	_add_sprite(MEDIEVAL + "Roof_1.png", Vector2(850, 382), Vector2(1.55, 1.15), -1)
-	_add_sprite(MEDIEVAL + "Roof_2.png", Vector2(850, 380), Vector2(1.55, 1.15), -1)
-	_add_sprite(MEDIEVAL + "Wooden_Beam_1.png", Vector2(790, 448), Vector2(2.0, 2.0), 0)
-	_add_sprite(MEDIEVAL + "Wooden_Beam-2.png", Vector2(910, 448), Vector2(2.0, 2.0), 0)
-	_add_sprite(MEDIEVAL + "Wooden_Door.png", Vector2(850, 528), Vector2(1.4, 1.4), 2)
-	_add_sprite(MEDIEVAL + "Window_1.png", Vector2(920, 477), Vector2(1.35, 1.35), 2)
-
-
-func _add_village_props() -> void:
-	var objects_path := "res://assets/sprites/environments/medieval_village_intc2748/Objects/"
-	_add_sprite(objects_path + "Wooden_Fence.png", Vector2(1005, 548), Vector2(2.0, 2.0), 2)
-	_add_sprite(objects_path + "Wooden_Barrel.png", Vector2(750, 550), Vector2(1.8, 1.8), 3)
-	_add_sprite(objects_path + "Tree_Stump.png", Vector2(540, 545), Vector2(1.7, 1.7), 2)
-	_add_sprite(objects_path + "Stone.png", Vector2(112, 556), Vector2(1.8, 1.8), 2)
-
-
-func _add_ground() -> void:
-	var ground_files := [
-		"Platformer - Ground 01.png", "Platformer - Ground 02.png", "Platformer - Ground 03.png",
-		"Platformer - Ground 04.png", "Platformer - Ground 05.png", "Platformer - Ground 06.png",
-		"Platformer - Ground 07.png", "Platformer - Ground 08.png", "Platformer - Ground 09.png",
-	]
-	for index in range(9):
-		var texture := load(SIDE_TILES + ground_files[index]) as Texture2D
-		if texture == null:
-			continue
-		var tile := Sprite2D.new()
-		tile.texture = texture
-		tile.position = Vector2(64 + index * 128, 650)
-		tile.z_index = 8
-		tile.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-		world_root.add_child(tile)
+	_add_interaction("bed", Vector2(350, 490), Vector2(210, 120), "Cama · Experiencia AFK", Vector2(430, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -115.0)
+	_add_interaction("chest", Vector2(790, 535), Vector2(116, 100), "Cofre · Recompensas AFK", Vector2(730, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -112.0)
+	_add_interaction("door", Vector2(1010, 510), Vector2(100, 140), "Salir al campamento", Vector2(960, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -150.0)
 
 
 func _add_blacksmith() -> void:
@@ -225,36 +216,61 @@ func _add_blacksmith() -> void:
 	blacksmith.name = "BlacksmithAtForge"
 	blacksmith.sprite_frames = frames
 	blacksmith.animation = "work"
-	blacksmith.position = Vector2(628, 548)
-	blacksmith.scale = Vector2(1.45, 1.45)
+	blacksmith.position = Vector2(745, GROUND_LINE - 50.0)
+	blacksmith.scale = Vector2(1.08, 1.08)
 	blacksmith.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	blacksmith.z_index = 15
 	world_root.add_child(blacksmith)
 	blacksmith.play("work")
-	_add_sprite("res://assets/sprites/props/side_scroller_village_v2/Bonfire.png", Vector2(650, 560), Vector2(0.55, 0.55), 12)
-	_add_interaction("gacha", Vector2(628, 550), Vector2(110, 130), "Forja de invocación")
+	_add_interaction("gacha", Vector2(700, GROUND_LINE - 52.0), Vector2(110, 132), "Forja de invocación", Vector2(620, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -160.0)
 
 
 func _add_goblin() -> void:
 	var sprite := Sprite2D.new()
-	sprite.texture = _atlas("res://assets/sprites/enemies/craftpix-net-228980-free-top-down-goblin-char__Front - Idle_000__00170a9b3881.png", Rect2(124, 67, 233, 315))
-	sprite.position = Vector2(180, 548)
-	sprite.scale = Vector2(0.45, 0.45)
+	sprite.name = "GoblinGuide"
+	sprite.texture = _atlas(GOBLIN_PATH, GOBLIN_REGION)
+	sprite.position = Vector2(145, GROUND_LINE - ACTOR_RENDER_HEIGHT * 0.5)
+	sprite.scale = Vector2.ONE * ACTOR_RENDER_HEIGHT / GOBLIN_REGION.size.y
 	sprite.z_index = 15
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	world_root.add_child(sprite)
-	_add_interaction("pve", Vector2(180, 548), Vector2(100, 140), "Goblin · Aventura PvE")
+	_animate_actor_bob(sprite, 3.0, 0.58)
+	_add_interaction("pve", sprite.position, Vector2(100, 145), "Goblin · Aventura PvE", Vector2(230, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -160.0)
+
+
+func _animate_actor_bob(actor: Node2D, amplitude: float, half_cycle: float) -> void:
+	var resting_position := actor.position
+	var bob := create_tween().set_loops()
+	bob.tween_property(actor, "position", resting_position + Vector2(0, -amplitude), half_cycle).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(actor, "position", resting_position, half_cycle).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
 func _add_knight() -> void:
 	var portrait := _atlas("res://assets/sprites/characters/Cartoon Characters by Rgs_dev__idle_1__0b2202b72ab3.png", Rect2(163, 140, 189, 240))
-	_add_sprite_texture(portrait, Vector2(370, 548), Vector2(0.42, 0.42), 15)
-	_add_interaction("pvp", Vector2(370, 548), Vector2(100, 140), "Eldric · Arena PvP")
+	var knight := _add_sprite_texture(portrait, Vector2(420, GROUND_LINE - ACTOR_RENDER_HEIGHT * 0.5), Vector2.ONE * ACTOR_RENDER_HEIGHT / 240.0, 15)
+	knight.name = "ArenaKnight"
+	_add_interaction("pvp", knight.position, Vector2(102, 145), "Eldric · Arena PvP", Vector2(330, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -160.0)
 
 
 func _add_gacha_forge() -> void:
 	var icon := load("res://assets/ui/cartoon-game-icons-free-sampler-icons__anime_raid_portal__53dfbb1cbc8f.png") as Texture2D
-	_add_sprite_texture(icon, Vector2(625, 475), Vector2(0.78, 0.78), 14)
+	var portal_height := 138.0
+	var portal := _add_sprite_texture(icon, Vector2(700, GROUND_LINE - portal_height * 0.56), Vector2.ONE * portal_height / icon.get_size().y, 14)
+	portal.name = "GachaPortal"
+
+
+func _add_exterior_chest() -> void:
+	var chest := AnimatedSprite2D.new()
+	chest.name = "AnimatedCampChest"
+	chest.sprite_frames = _make_chest_frames()
+	chest.animation = "idle"
+	chest.position = Vector2(1090, GROUND_LINE - 35.0)
+	chest.scale = Vector2(2.05, 2.05)
+	chest.z_index = 16
+	chest.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	world_root.add_child(chest)
+	chest.play("idle")
+	_add_interaction("chest", chest.position, Vector2(120, 90), "Cofre · Recompensas", Vector2(980, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -130.0)
 
 
 func _add_house_furniture() -> void:
@@ -281,8 +297,8 @@ func _add_house_furniture() -> void:
 	animated_chest.name = "AnimatedRewardChest"
 	animated_chest.sprite_frames = _make_chest_frames()
 	animated_chest.animation = "idle"
-	animated_chest.position = Vector2(790, 560)
-	animated_chest.scale = Vector2(2.2, 2.2)
+	animated_chest.position = Vector2(790, 540)
+	animated_chest.scale = Vector2(2.0, 2.0)
 	animated_chest.z_index = 9
 	animated_chest.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	world_root.add_child(animated_chest)
@@ -293,7 +309,8 @@ func _add_player() -> void:
 	set_hero(active_hero_id)
 
 
-func _add_interaction(kind: String, at: Vector2, size: Vector2, label_text: String) -> void:
+func _add_interaction(kind: String, at: Vector2, size: Vector2, label_text: String, player_destination: Vector2, label_offset_y: float = -155.0) -> void:
+	interaction_bounds.append(Rect2(at - size * 0.5, size))
 	var area := Area2D.new()
 	area.name = "Interact_" + kind
 	area.position = at
@@ -306,16 +323,16 @@ func _add_interaction(kind: String, at: Vector2, size: Vector2, label_text: Stri
 	area.add_child(collision)
 	area.input_event.connect(func(_viewport: Node, event: InputEvent, _shape: int) -> void:
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-			interaction_requested.emit(kind, at + Vector2(0, 8))
+			interaction_requested.emit(kind, player_destination)
 		elif event is InputEventScreenTouch and event.pressed:
-			interaction_requested.emit(kind, at + Vector2(0, 8))
+			interaction_requested.emit(kind, player_destination)
 	)
 	var label := Label.new()
 	label.text = label_text
-	label.position = Vector2(-90, -78)
-	label.size = Vector2(180, 22)
+	label.position = Vector2(-100, label_offset_y)
+	label.size = Vector2(200, 24)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 11)
+	label.add_theme_font_size_override("font_size", 10)
 	label.add_theme_color_override("font_color", Color("#fff0c9"))
 	label.add_theme_color_override("font_outline_color", Color("#302014"))
 	label.add_theme_constant_override("outline_size", 4)
@@ -362,42 +379,27 @@ func _make_chest_frames() -> SpriteFrames:
 	return frames
 
 
-func _make_hero_frames(hero_id: String) -> SpriteFrames:
+func _make_hero_frames(hero_id: String, selected_texture: Texture2D) -> SpriteFrames:
+	var hero_frame := selected_texture
+	if hero_frame == null:
+		var paths := {
+			"guardiana": "res://assets/sprites/characters/craftpix-net-469596-free-chibi-valkyrie-chara__0_Valkyrie_Idle_000__03a3950e139c.png",
+			"espadachin": "res://assets/sprites/characters/Cartoon Characters by Rgs_dev__idle_1__0b2202b72ab3.png",
+			"explorador": "res://assets/sprites/characters/Cartoon Characters by Rgs_dev__idle_0__4fae79732974.png",
+		}
+		var source := load(str(paths.get(hero_id, paths["guardiana"]))) as Texture2D
+		if source != null and hero_id == "guardiana":
+			hero_frame = _atlas(str(paths[hero_id]), Rect2(208, 185, 436, 565))
+		elif source != null and hero_id == "espadachin":
+			hero_frame = _atlas(str(paths[hero_id]), Rect2(163, 140, 189, 240))
+		elif source != null:
+			hero_frame = _atlas(str(paths.get(hero_id, paths["guardiana"])), Rect2(154, 157, 250, 223))
 	var frames := SpriteFrames.new()
-	frames.add_animation("walk")
-	frames.set_animation_speed("walk", 9.0)
-	frames.set_animation_loop("walk", true)
-	var paths: Array = RUN_FRAMES.get(hero_id, RUN_FRAMES["guardiana"])
-	if hero_id == "guardiana":
-		paths = _valkyrie_walk_paths()
-	for path in paths:
-		var whole_texture := load(str(path)) as Texture2D
-		if whole_texture == null:
-			continue
-		var atlas := AtlasTexture.new()
-		atlas.atlas = whole_texture
-		atlas.region = Rect2(112, 110, 300, 390) if hero_id != "guardiana" else Rect2(145, 135, 620, 650)
-		frames.add_frame("walk", atlas)
-	if frames.get_frame_count("walk") == 0:
-		frames.add_frame("walk", load("res://assets/sprites/characters/Cartoon Characters by Rgs_dev__idle_1__0b2202b72ab3.png") as Texture2D)
 	frames.add_animation("idle")
-	frames.set_animation_speed("idle", 1.0)
 	frames.set_animation_loop("idle", true)
-	frames.add_frame("idle", frames.get_frame_texture("walk", 0))
+	frames.add_frame("idle", hero_frame)
+	frames.add_animation("walk")
+	frames.set_animation_speed("walk", 8.0)
+	frames.set_animation_loop("walk", true)
+	frames.add_frame("walk", hero_frame)
 	return frames
-
-
-func _valkyrie_walk_paths() -> Array[String]:
-	var paths: Array[String] = []
-	var source_directory := "res://assets/sprites/characters"
-	var files := DirAccess.get_files_at(source_directory)
-	files.sort()
-	# Cuatro poses bastan para que la carrera se lea bien. Cada imagen original
-	# mide 900x900; cargar las 24 de golpe puede agotar la memoria gráfica web.
-	for frame_index in range(0, 24, 6):
-		var prefix := "craftpix-net-469596-free-chibi-valkyrie-chara__0_Valkyrie_Walking_%03d__" % frame_index
-		for file_name in files:
-			if file_name.begins_with(prefix) and file_name.ends_with(".png"):
-				paths.append(source_directory.path_join(file_name))
-				break
-	return paths
