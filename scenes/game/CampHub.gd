@@ -211,17 +211,9 @@ func _build_hud() -> Control:
 	brand.add_theme_constant_override("separation", 0)
 	brand.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	header.add_child(brand)
-	var logo := Label.new()
-	logo.text = "TIERRAS DE VALORIA"
-	logo.add_theme_font_size_override("font_size", 13 if compact else 20 if screen_width >= 800.0 else 16)
-	logo.clip_text = false
-	logo.add_theme_color_override("font_color", Color(1.0, 0.91, 0.68, 1.0))
-	logo.add_theme_color_override("font_outline_color", Color(0.18, 0.09, 0.035, 1.0))
-	logo.add_theme_constant_override("outline_size", 4)
-	brand.add_child(logo)
 	var camp_subtitle := Label.new()
 	camp_subtitle.text = "REFUGIO DEL BOSQUE"
-	camp_subtitle.add_theme_font_size_override("font_size", 9 if compact else 10)
+	camp_subtitle.add_theme_font_size_override("font_size", 11 if compact else 13)
 	camp_subtitle.add_theme_color_override("font_color", Color(0.95, 0.83, 0.58, 1.0))
 	brand.add_child(camp_subtitle)
 	var header_spacer := Control.new()
@@ -261,13 +253,21 @@ func _build_hud() -> Control:
 	profile_settings.pressed.connect(_open_settings)
 	profile_row.add_child(profile_settings)
 	header.add_child(profile_card)
+	var currency_panel := PanelContainer.new()
+	currency_panel.name = "CurrencyBarFrame"
+	currency_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	hud.add_child(currency_panel)
+	var currency_margin := MarginContainer.new()
+	for side in ["left", "top", "right", "bottom"]:
+		currency_margin.add_theme_constant_override("margin_" + side, 5 if compact else 8)
+	currency_panel.add_child(currency_margin)
 	currency_grid = GridContainer.new()
 	currency_grid.name = "CurrencyGrid"
 	currency_grid.columns = 4 if screen_width >= 440.0 else 2
 	currency_grid.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	currency_grid.add_theme_constant_override("h_separation", 12 if screen_width >= 640.0 else 5)
 	currency_grid.add_theme_constant_override("v_separation", 2)
-	hud.add_child(currency_grid)
+	currency_margin.add_child(currency_grid)
 	var currencies := [
 		["coins", "Oro"], ["tickets", "Tickets gacha"],
 		["diamonds", "Diamantes"], ["premium_tickets", "Tickets especiales"],

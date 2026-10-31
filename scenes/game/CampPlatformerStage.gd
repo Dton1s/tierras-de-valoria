@@ -96,7 +96,9 @@ func move_hero_to(destination: Vector2, arrived: Callable) -> void:
 	hero.scale = _hero_render_scale()
 	var floor_line := INTERIOR_GROUND_LINE if inside_house else GROUND_LINE
 	var room_bounds := Vector2(145.0, 1120.0) if inside_house else Vector2(52.0, BASE_SIZE.x - 52.0)
-	var target := Vector2(clampf(destination.x, room_bounds.x, room_bounds.y), floor_line - HERO_RENDER_HEIGHT * 0.5)
+	var minimum_y := floor_line - HERO_RENDER_HEIGHT * 0.5
+	var maximum_y := INTERIOR_GROUND_LINE + 52.0 if inside_house else BASE_SIZE.y - HERO_RENDER_HEIGHT * 0.5
+	var target := Vector2(clampf(destination.x, room_bounds.x, room_bounds.y), clampf(destination.y, minimum_y, maximum_y))
 	hero.flip_h = target.x < hero.position.x
 	hero.play("walk")
 	_animate_hero_motion(true)
@@ -115,25 +117,39 @@ func move_hero_to(destination: Vector2, arrived: Callable) -> void:
 func _process(delta: float) -> void:
 	if not is_instance_valid(hero):
 		return
-	var direction := Input.get_axis("ui_left", "ui_right")
-	if not is_zero_approx(direction):
+	var movement := Vector2.ZERO
+	if Input.is_action_pressed("ui_left") or Input.is_key_pressed(KEY_A):
+		movement.x -= 1.0
+	if Input.is_action_pressed("ui_right") or Input.is_key_pressed(KEY_D):
+		movement.x += 1.0
+	if Input.is_action_pressed("ui_up") or Input.is_key_pressed(KEY_W):
+		movement.y -= 1.0
+	if Input.is_action_pressed("ui_down") or Input.is_key_pressed(KEY_S):
+		movement.y += 1.0
+	if movement != Vector2.ZERO:
 		if is_instance_valid(movement_tween):
 			movement_tween.kill()
-		var floor_line := INTERIOR_GROUND_LINE if inside_house else GROUND_LINE
 		hero.rotation = 0.0
 		hero.scale = _hero_render_scale()
-		hero.position.y = floor_line - HERO_RENDER_HEIGHT * 0.5
 		if not was_moving_with_keyboard:
 			hero.play("walk")
 			_animate_hero_motion(true)
 		var room_bounds := Vector2(145.0, 1120.0) if inside_house else Vector2(52.0, BASE_SIZE.x - 52.0)
-		hero.position.x = clampf(hero.position.x + direction * 260.0 * delta, room_bounds.x, room_bounds.y)
-		hero.flip_h = direction < 0.0
+		var floor_line := INTERIOR_GROUND_LINE if inside_house else GROUND_LINE
+		var minimum_y := floor_line - HERO_RENDER_HEIGHT * 0.5
+		var maximum_y := INTERIOR_GROUND_LINE + 52.0 if inside_house else BASE_SIZE.y - HERO_RENDER_HEIGHT * 0.5
+		var step := movement.normalized() * 260.0 * delta
+		hero.position.x = clampf(hero.position.x + step.x, room_bounds.x, room_bounds.y)
+		hero.position.y = clampf(hero.position.y + step.y, minimum_y, maximum_y)
+		if not is_zero_approx(movement.x):
+			hero.flip_h = movement.x < 0.0
 		was_moving_with_keyboard = true
 	elif was_moving_with_keyboard:
 		hero.play("idle")
 		_animate_hero_motion(false)
 		was_moving_with_keyboard = false
+	# Orden por profundidad de los pies, para cruzarse correctamente con NPCs.
+	hero.z_index = 10 + int((hero.position.y + HERO_RENDER_HEIGHT * 0.5) / 20.0)
 
 
 func _animate_hero_motion(walking: bool) -> void:
@@ -159,17 +175,16 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 	if not is_instance_valid(hero):
 		return
-	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+	if not is_instance_valid(hero) or not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
 		return
 	var world_position := world_root.to_local(get_global_mouse_position())
 	for bounds in interaction_bounds:
 		if bounds.has_point(world_position):
 			return
-	var floor_line := INTERIOR_GROUND_LINE if inside_house else GROUND_LINE
 	if inside_house and world_position.y >= 410.0:
-		move_hero_to(Vector2(world_position.x, hero.position.y), Callable())
-	elif not inside_house and world_position.y >= floor_line - HERO_RENDER_HEIGHT:
-		move_hero_to(Vector2(world_position.x, hero.position.y), Callable())
+		move_hero_to(world_position, Callable())
+	elif not inside_house and world_position.y >= GROUND_LINE - HERO_RENDER_HEIGHT:
+		move_hero_to(world_position, Callable())
 
 
 func set_interior(enabled: bool) -> void:
@@ -427,13 +442,13 @@ func _add_blacksmith() -> void:
 	blacksmith.name = "BlacksmithAtForge"
 	blacksmith.sprite_frames = frames
 	blacksmith.animation = "work"
-	blacksmith.position = Vector2(745, GROUND_LINE - 30.0)
-	blacksmith.scale = Vector2(1.08, 1.08)
+	blacksmith.position = Vector2(770, GROUND_LINE - 60.0)
+	blacksmith.scale = Vector2(2.0, 2.0)
 	blacksmith.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	blacksmith.z_index = 15
+	blacksmith.z_index = 40
 	world_root.add_child(blacksmith)
 	blacksmith.play("work")
-	_add_interaction("gacha", Vector2(700, GROUND_LINE - 52.0), Vector2(110, 132), "Forja de invocación", Vector2(620, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -160.0)
+	_add_interaction("gacha", Vector2(835, GROUND_LINE - 52.0), Vector2(110, 132), "Forja de invocación", Vector2(750, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -160.0)
 
 
 func _add_goblin() -> void:
@@ -441,13 +456,12 @@ func _add_goblin() -> void:
 	sprite.name = "GoblinGuide"
 	sprite.sprite_frames = _make_goblin_frames()
 	sprite.animation = "idle"
-	sprite.position = Vector2(180, GROUND_LINE - 40.0)
+	sprite.position = Vector2(180, GROUND_LINE - 35.0)
 	sprite.scale = Vector2(0.44, 0.44)
-	sprite.z_index = 15
+	sprite.z_index = 40
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	world_root.add_child(sprite)
 	sprite.play("idle")
-	_animate_actor_bob(sprite, 3.0, 0.58)
 	_add_interaction("pve", sprite.position, Vector2(100, 145), "Goblin · Aventura PvE", Vector2(230, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -160.0)
 
 
@@ -471,9 +485,9 @@ func _add_knight() -> void:
 	knight.name = "ArenaKnight"
 	knight.sprite_frames = frames
 	knight.animation = "idle"
-	knight.position = Vector2(420, GROUND_LINE - 54.0)
-	knight.scale = Vector2(4.5, 4.5)
-	knight.z_index = 15
+	knight.position = Vector2(420, GROUND_LINE - 44.8)
+	knight.scale = Vector2(3.2, 3.2)
+	knight.z_index = 40
 	knight.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	world_root.add_child(knight)
 	knight.play("idle")
@@ -483,7 +497,7 @@ func _add_knight() -> void:
 func _add_gacha_forge() -> void:
 	var icon := load("res://assets/ui/cartoon-game-icons-free-sampler-icons__anime_raid_portal__53dfbb1cbc8f.png") as Texture2D
 	var portal_height := 138.0
-	var portal := _add_sprite_texture(icon, Vector2(700, GROUND_LINE - portal_height * 0.56), Vector2.ONE * portal_height / icon.get_size().y, 14)
+	var portal := _add_sprite_texture(icon, Vector2(835, GROUND_LINE - portal_height * 0.5), Vector2.ONE * portal_height / icon.get_size().y, 14)
 	portal.name = "GachaPortal"
 
 
@@ -550,10 +564,8 @@ func _interact_with_nearest_hotspot() -> void:
 	for hotspot in interaction_hotspots:
 		var at: Vector2 = hotspot["at"]
 		var size: Vector2 = hotspot["size"]
-		# El movimiento del refugio es lateral: medimos proximidad sobre el suelo
-		# para que la altura visual de los sprites no impida usar la tecla E.
-		var distance := absf(hero.position.x - at.x)
-		var reach := maxf(92.0, size.x * 0.5 + 54.0)
+		var distance := hero.position.distance_to(at)
+		var reach := maxf(96.0, size.x * 0.5 + 45.0)
 		if distance <= reach and distance < nearest_distance:
 			nearest = hotspot
 			nearest_distance = distance
