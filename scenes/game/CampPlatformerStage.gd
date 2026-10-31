@@ -43,6 +43,7 @@ var active_hero_texture: Texture2D
 var movement_tween: Tween
 var hero_bob_tween: Tween
 var interaction_bounds: Array[Rect2] = []
+var interaction_hotspots: Array[Dictionary] = []
 var was_moving_with_keyboard := false
 
 
@@ -94,7 +95,8 @@ func move_hero_to(destination: Vector2, arrived: Callable) -> void:
 	hero.rotation = 0.0
 	hero.scale = _hero_render_scale()
 	var floor_line := INTERIOR_GROUND_LINE if inside_house else GROUND_LINE
-	var target := Vector2(clampf(destination.x, 52.0, BASE_SIZE.x - 52.0), floor_line - HERO_RENDER_HEIGHT * 0.5)
+	var room_bounds := Vector2(145.0, 1120.0) if inside_house else Vector2(52.0, BASE_SIZE.x - 52.0)
+	var target := Vector2(clampf(destination.x, room_bounds.x, room_bounds.y), floor_line - HERO_RENDER_HEIGHT * 0.5)
 	hero.flip_h = target.x < hero.position.x
 	hero.play("walk")
 	_animate_hero_motion(true)
@@ -111,16 +113,21 @@ func move_hero_to(destination: Vector2, arrived: Callable) -> void:
 
 
 func _process(delta: float) -> void:
-	if not is_instance_valid(hero) or inside_house:
+	if not is_instance_valid(hero):
 		return
 	var direction := Input.get_axis("ui_left", "ui_right")
 	if not is_zero_approx(direction):
 		if is_instance_valid(movement_tween):
 			movement_tween.kill()
+		var floor_line := INTERIOR_GROUND_LINE if inside_house else GROUND_LINE
+		hero.rotation = 0.0
+		hero.scale = _hero_render_scale()
+		hero.position.y = floor_line - HERO_RENDER_HEIGHT * 0.5
 		if not was_moving_with_keyboard:
 			hero.play("walk")
 			_animate_hero_motion(true)
-		hero.position.x = clampf(hero.position.x + direction * 260.0 * delta, 52.0, BASE_SIZE.x - 52.0)
+		var room_bounds := Vector2(145.0, 1120.0) if inside_house else Vector2(52.0, BASE_SIZE.x - 52.0)
+		hero.position.x = clampf(hero.position.x + direction * 260.0 * delta, room_bounds.x, room_bounds.y)
 		hero.flip_h = direction < 0.0
 		was_moving_with_keyboard = true
 	elif was_moving_with_keyboard:
@@ -143,10 +150,13 @@ func _animate_hero_motion(walking: bool) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_E:
+		_interact_with_nearest_hotspot()
+		return
 	if inside_house:
 		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
-			interaction_requested.emit("door", Vector2(885, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5))
-		return
+			interaction_requested.emit("door", Vector2(900, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5))
+			return
 	if not is_instance_valid(hero):
 		return
 	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
@@ -155,7 +165,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	for bounds in interaction_bounds:
 		if bounds.has_point(world_position):
 			return
-	if world_position.y >= GROUND_LINE - HERO_RENDER_HEIGHT:
+	var floor_line := INTERIOR_GROUND_LINE if inside_house else GROUND_LINE
+	if inside_house and world_position.y >= 410.0:
+		move_hero_to(Vector2(world_position.x, hero.position.y), Callable())
+	elif not inside_house and world_position.y >= floor_line - HERO_RENDER_HEIGHT:
 		move_hero_to(Vector2(world_position.x, hero.position.y), Callable())
 
 
@@ -170,6 +183,7 @@ func _build_world() -> void:
 	if is_instance_valid(hero_bob_tween):
 		hero_bob_tween.kill()
 	interaction_bounds.clear()
+	interaction_hotspots.clear()
 	for child in world_root.get_children():
 		child.queue_free()
 	hero = null
@@ -279,9 +293,9 @@ func _build_interior() -> void:
 	_add_house_furniture()
 	_add_room_exit_door()
 	_add_player()
-	_add_interaction("bed", Vector2(350, 475), Vector2(280, 145), "Cama · Experiencia AFK", Vector2(430, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -125.0)
+	_add_interaction("bed", Vector2(370, 447), Vector2(300, 155), "Cama · Experiencia AFK", Vector2(548, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -125.0)
 	_add_interaction("chest", Vector2(785, 463.8), Vector2(176, 132), "Cofre · Recompensas AFK", Vector2(700, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -112.0)
-	_add_interaction("door", Vector2(1000, 469), Vector2(138, 178), "Salir al campamento", Vector2(885, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -145.0)
+	_add_interaction("door", Vector2(1003, 449), Vector2(100, 165), "Salir al campamento", Vector2(900, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -145.0)
 
 
 func _add_room_rect(node_name: String, color: Color, rect: Rect2, layer: int) -> ColorRect:
@@ -339,13 +353,16 @@ func _add_room_shelf(at: Vector2) -> void:
 
 
 func _add_room_exit_door() -> void:
-	_add_room_rect("ExitDoorShadow", Color("#3d281d"), Rect2(960, 380, 86, 137), -3)
-	var door := _add_sprite(HOUSE_DOOR, Vector2(1003, 450), Vector2(2.65, 2.1), -2)
+	# Marco ancho, vano dorado y puerta encajada en el centro del hueco.
+	_add_room_rect("ExitDoorFrame", Color("#3d281d"), Rect2(950, 365, 106, 153), -3)
+	_add_room_rect("ExitDoorGoldenReveal", Color("#e7b85e"), Rect2(966, 372, 74, 143), -2)
+	_add_room_rect("ExitDoorThreshold", Color("#875735"), Rect2(945, 513, 116, 8), -1)
+	var door := _add_sprite(HOUSE_DOOR, Vector2(1003, 443.5), Vector2(2.18, 2.22), 0)
 	door.name = "ExitDoorToCamp"
 	var sign := Label.new()
 	sign.name = "ExitDoorSign"
 	sign.text = "SALIDA · CAMPAMENTO"
-	sign.position = Vector2(904, 320)
+	sign.position = Vector2(903, 329)
 	sign.size = Vector2(200, 25)
 	sign.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sign.add_theme_font_size_override("font_size", 13)
@@ -358,39 +375,26 @@ func _add_room_exit_door() -> void:
 
 
 func _add_house_furniture() -> void:
-	# Alfombra, cama de madera con colcha y almohada; las formas siguen el
-	# acabado cálido del refugio y dejan al héroe visible al descansar.
-	_add_room_polygon("BedRugBorder", Color("#533323"), PackedVector2Array([
-		Vector2(202, 470), Vector2(472, 470), Vector2(523, 550), Vector2(253, 550)
-	]), 2)
-	_add_room_polygon("BedRug", Color("#8d4936"), PackedVector2Array([
-		Vector2(214, 475), Vector2(465, 475), Vector2(510, 544), Vector2(259, 544)
-	]), 3)
-	_add_room_polygon("BedRugInset", Color("#b87b4a"), PackedVector2Array([
-		Vector2(230, 481), Vector2(455, 481), Vector2(493, 538), Vector2(268, 538)
-	]), 4)
-	_add_room_rect("BedLegLeftBack", Color("#4e3020"), Rect2(253, 446, 14, 69), 5)
-	_add_room_rect("BedLegRightBack", Color("#4e3020"), Rect2(464, 446, 14, 69), 5)
-	_add_room_polygon("BedFrame", Color("#54331f"), PackedVector2Array([
-		Vector2(242, 405), Vector2(451, 405), Vector2(500, 470), Vector2(291, 470)
-	]), 6)
-	_add_room_polygon("BedFrameTrim", Color("#a16b3e"), PackedVector2Array([
-		Vector2(250, 410), Vector2(446, 410), Vector2(490, 462), Vector2(294, 462)
-	]), 7)
-	_add_room_polygon("BedMattress", Color("#ead8b2"), PackedVector2Array([
-		Vector2(259, 415), Vector2(441, 415), Vector2(480, 457), Vector2(298, 457)
-	]), 8)
-	_add_room_polygon("BedPillow", Color("#fff1d5"), PackedVector2Array([
-		Vector2(267, 419), Vector2(322, 419), Vector2(345, 445), Vector2(290, 445)
-	]), 9)
-	_add_room_polygon("BedQuilt", Color("#8f4037"), PackedVector2Array([
-		Vector2(346, 415), Vector2(441, 415), Vector2(480, 457), Vector2(385, 457)
-	]), 9)
-	_add_room_polygon("BedQuiltFold", Color("#b7684e"), PackedVector2Array([
-		Vector2(357, 420), Vector2(438, 420), Vector2(450, 433), Vector2(369, 433)
-	]), 10)
-	_add_room_rect("BedLegLeftFront", Color("#4e3020"), Rect2(282, 462, 14, 53), 11)
-	_add_room_rect("BedLegRightFront", Color("#4e3020"), Rect2(479, 462, 14, 53), 11)
+	# La alfombra queda enteramente sobre las tablas marrones. La cama está de
+	# perfil y sus cuatro apoyos llegan al suelo, sin flotar ni quedar torcidos.
+	_add_room_rect("BedRugBorder", Color("#533323"), Rect2(220, 512, 328, 96), -7)
+	_add_room_rect("BedRug", Color("#8d4936"), Rect2(229, 519, 310, 82), -6)
+	_add_room_rect("BedRugInset", Color("#b87b4a"), Rect2(240, 526, 288, 68), -5)
+	_add_room_rect("BedRugCenter", Color("#8d4936"), Rect2(252, 533, 264, 54), -4)
+	_add_room_rect("BedLegLeftBack", Color("#4e3020"), Rect2(258, 450, 16, 65), 1)
+	_add_room_rect("BedLegRightBack", Color("#4e3020"), Rect2(488, 450, 16, 65), 1)
+	_add_room_rect("BedHeadboard", Color("#54331f"), Rect2(236, 378, 25, 83), 3)
+	_add_room_rect("BedHeadboardTrim", Color("#a16b3e"), Rect2(240, 383, 17, 72), 4)
+	_add_room_rect("BedFrame", Color("#54331f"), Rect2(252, 438, 255, 24), 4)
+	_add_room_rect("BedFrameTrim", Color("#a16b3e"), Rect2(257, 442, 245, 8), 5)
+	_add_room_rect("BedMattress", Color("#ead8b2"), Rect2(257, 409, 243, 33), 6)
+	_add_room_rect("BedPillow", Color("#fff1d5"), Rect2(266, 414, 64, 21), 7)
+	_add_room_rect("BedQuilt", Color("#8f4037"), Rect2(336, 409, 164, 33), 7)
+	_add_room_rect("BedQuiltFold", Color("#b7684e"), Rect2(346, 414, 143, 8), 8)
+	_add_room_rect("BedLegLeftFront", Color("#4e3020"), Rect2(258, 456, 16, 59), 9)
+	_add_room_rect("BedLegRightFront", Color("#4e3020"), Rect2(488, 456, 16, 59), 9)
+	_add_room_rect("BedFootLeft", Color("#70472c"), Rect2(251, 507, 29, 8), 10)
+	_add_room_rect("BedFootRight", Color("#70472c"), Rect2(481, 507, 29, 8), 10)
 
 	var animated_chest := AnimatedSprite2D.new()
 	animated_chest.name = "AnimatedRewardChest"
@@ -486,13 +490,25 @@ func _add_gacha_forge() -> void:
 func _add_player() -> void:
 	set_hero(active_hero_id)
 	if inside_house and is_instance_valid(hero):
-		hero.position = Vector2(350, 485)
-		hero.rotation = PI * 0.5
-		hero.scale = _hero_render_scale() * 0.82
+		hero.position = Vector2(585, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5)
+
+
+func set_hero_resting() -> void:
+	if not is_instance_valid(hero):
+		return
+	if is_instance_valid(movement_tween):
+		movement_tween.kill()
+	hero.play("idle")
+	hero.position = Vector2(390, 425)
+	hero.rotation = PI * 0.5
+	hero.scale = _hero_render_scale() * 0.82
+	was_moving_with_keyboard = false
+	_animate_hero_motion(false)
 
 
 func _add_interaction(kind: String, at: Vector2, size: Vector2, label_text: String, player_destination: Vector2, label_offset_y: float = -155.0) -> void:
 	interaction_bounds.append(Rect2(at - size * 0.5, size))
+	interaction_hotspots.append({"kind": kind, "at": at, "size": size, "destination": player_destination})
 	var area := Area2D.new()
 	area.name = "Interact_" + kind
 	area.position = at
@@ -524,6 +540,25 @@ func _add_interaction(kind: String, at: Vector2, size: Vector2, label_text: Stri
 	area.mouse_entered.connect(label.show)
 	area.mouse_exited.connect(label.hide)
 	world_root.add_child(area)
+
+
+func _interact_with_nearest_hotspot() -> void:
+	if not is_instance_valid(hero):
+		return
+	var nearest: Dictionary = {}
+	var nearest_distance := INF
+	for hotspot in interaction_hotspots:
+		var at: Vector2 = hotspot["at"]
+		var size: Vector2 = hotspot["size"]
+		# El movimiento del refugio es lateral: medimos proximidad sobre el suelo
+		# para que la altura visual de los sprites no impida usar la tecla E.
+		var distance := absf(hero.position.x - at.x)
+		var reach := maxf(92.0, size.x * 0.5 + 54.0)
+		if distance <= reach and distance < nearest_distance:
+			nearest = hotspot
+			nearest_distance = distance
+	if not nearest.is_empty():
+		interaction_requested.emit(str(nearest["kind"]), nearest["destination"])
 
 
 func _add_sprite(path: String, at: Vector2, sprite_scale: Vector2, layer: int) -> Sprite2D:

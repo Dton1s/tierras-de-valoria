@@ -757,7 +757,9 @@ func _on_platformer_interaction(kind: String, destination: Vector2) -> void:
 			"pvp": _open_pvp()
 			"gacha": _open_gacha()
 			"chest": _open_chest_rewards()
-			"bed": _open_bed_rewards()
+			"bed":
+				platformer_stage.call("set_hero_resting")
+				_open_bed_rewards()
 			"door":
 				var entering := not bool(platformer_stage.get("inside_house"))
 				platformer_stage.call("set_interior", entering)
@@ -979,7 +981,7 @@ func _open_bed_rewards() -> void:
 	view.box.add_child(portrait_center)
 	var xp_total := int(profile.get("xp", 0))
 	var hero_level := int(profile.get("hero_level", 1))
-	_add_body(view.box, "%s descansa en el piso superior y recupera fuerzas.\n\nNivel %d · %d EXP acumulada\nAl volver: +%d EXP" % [str(hero.get("character_name", hero.get("name", "Héroe"))), hero_level, xp_total, amount])
+	_add_body(view.box, "%s se tumba a descansar y recupera fuerzas.\n\nNivel %d · %d EXP acumulada\nAl volver: +%d EXP" % [str(hero.get("character_name", hero.get("name", "Héroe"))), hero_level, xp_total, amount])
 	var progress := ProgressBar.new()
 	progress.min_value = 0
 	progress.max_value = 100
