@@ -211,9 +211,9 @@ func _add_walkable_ground() -> void:
 func _add_cabin() -> void:
 	var wall := _add_sprite(HOUSE_WALL, Vector2(955, GROUND_LINE - 112), Vector2(2.1, 2.1), 10)
 	wall.name = "CabinWall"
-	var left_roof := _add_sprite(HOUSE_ROOF_RIGHT, Vector2(883, GROUND_LINE - 230), Vector2(2.25, 2.25), 12)
+	var left_roof := _add_sprite(HOUSE_ROOF_RIGHT, Vector2(840, GROUND_LINE - 237), Vector2(1.8, 1.8), 12)
 	left_roof.name = "CabinRoofLeft"
-	var right_roof := _add_sprite(HOUSE_ROOF_LEFT, Vector2(1027, GROUND_LINE - 230), Vector2(2.25, 2.25), 12)
+	var right_roof := _add_sprite(HOUSE_ROOF_LEFT, Vector2(1070, GROUND_LINE - 237), Vector2(1.8, 1.8), 12)
 	right_roof.name = "CabinRoofRight"
 	var door := _add_sprite(HOUSE_DOOR, Vector2(955, GROUND_LINE - 55), Vector2(1.55, 1.55), 14)
 	door.name = "CabinDoor"
