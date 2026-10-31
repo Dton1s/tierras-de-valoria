@@ -17,19 +17,33 @@ extends Control
 
 
 func _ready() -> void:
-	%EnterHubButton.pressed.connect(_on_enter_hub_pressed)
-	%OpenSettingsButton.pressed.connect(_show_settings)
-	%DisconnectButton.pressed.connect(_on_disconnect_pressed)
-	%QuitButton.pressed.connect(_on_quit_pressed)
-	%SettingsBackButton.pressed.connect(_show_camp)
+	_connect_button(%EnterHubButton, _on_enter_hub_pressed)
+	_connect_button(%OpenSettingsButton, _show_settings)
+	_connect_button(%DisconnectButton, _on_disconnect_pressed)
+	_connect_button(%QuitButton, _on_quit_pressed)
+	_connect_button(%SettingsBackButton, _show_camp)
 	master_volume.value_changed.connect(_on_volume_changed.bind(&"Master", %MasterValue))
 	music_volume.value_changed.connect(_on_volume_changed.bind(&"Music", %MusicValue))
 	sfx_volume.value_changed.connect(_on_volume_changed.bind(&"SFX", %SFXValue))
 	window_mode.item_selected.connect(_on_window_mode_selected)
+	if not is_instance_valid(SupabaseManager) or not SupabaseManager.is_authenticated or SupabaseManager.current_user.is_empty():
+		call_deferred("_return_to_main_menu")
+		return
 	_sync_account_info()
 	_sync_settings()
 	_show_transient_login_feedback()
 	%EnterHubButton.grab_focus.call_deferred()
+
+
+func _connect_button(button: Button, callback: Callable) -> void:
+	if not button.pressed.is_connected(callback):
+		button.pressed.connect(callback)
+
+
+func _return_to_main_menu() -> void:
+	if get_tree().current_scene != self:
+		return
+	get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
 
 
 func _sync_account_info() -> void:

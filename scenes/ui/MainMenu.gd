@@ -43,7 +43,7 @@ func _ready() -> void:
 	# Supabase al final para que un fallo del autoload no deje la pantalla muda.
 	if is_instance_valid(SupabaseManager) and not SupabaseManager.auth_completed.is_connected(_on_supabase_auth_completed):
 		SupabaseManager.auth_completed.connect(_on_supabase_auth_completed)
-	if is_instance_valid(SupabaseManager) and SupabaseManager.is_authenticated:
+	if is_instance_valid(SupabaseManager) and SupabaseManager.is_authenticated and not SupabaseManager.current_user.is_empty():
 		_continue_to_camp.call_deferred()
 	print("[MainMenu] Listo; botones de navegación conectados desde la escena.")
 
