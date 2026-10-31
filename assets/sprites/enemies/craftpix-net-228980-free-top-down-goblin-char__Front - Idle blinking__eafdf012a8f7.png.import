@@ -2,12 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://r3j3ay8jjgh7"
-valid=false
+uid="uid://c747felkr2nn"
+path="res://.godot/imported/craftpix-net-228980-free-top-down-goblin-char__Front - Idle blinking__eafdf012a8f7.png-fa170e2ae9f6a94ab9bbc1121cd0015f.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
 source_file="res://assets/sprites/enemies/craftpix-net-228980-free-top-down-goblin-char__Front - Idle blinking__eafdf012a8f7.png"
+dest_files=["res://.godot/imported/craftpix-net-228980-free-top-down-goblin-char__Front - Idle blinking__eafdf012a8f7.png-fa170e2ae9f6a94ab9bbc1121cd0015f.ctex"]
 
 [params]
 
