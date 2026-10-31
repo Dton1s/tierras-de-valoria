@@ -143,7 +143,7 @@ func _build_interface() -> void:
 	camp_modal_shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	# Keep the shade above the game world and below the HUD and popup.
 	camp_modal_shade.z_index = 4
-	camp_modal_shade.color = Color(0.015, 0.025, 0.02, 0.58)
+	camp_modal_shade.color = Color(0.0, 0.0, 0.0, 0.56)
 	camp_modal_shade.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var margin := MarginContainer.new()
@@ -256,7 +256,7 @@ func _build_hud() -> Control:
 	hud.add_child(header_spacer)
 	var profile_card := PanelContainer.new()
 	profile_card.name = "PlayerProfile"
-	profile_card.custom_minimum_size = Vector2(154, 40) if compact else Vector2(180, 44)
+	profile_card.custom_minimum_size = Vector2(186, 44) if compact else Vector2(224, 50)
 	profile_card.add_theme_stylebox_override("panel", _hud_panel_style())
 	var profile_margin := MarginContainer.new()
 	profile_margin.add_theme_constant_override("margin_left", 5)
@@ -268,7 +268,7 @@ func _build_hud() -> Control:
 	profile_row.add_theme_constant_override("separation", 5)
 	profile_margin.add_child(profile_row)
 	profile_portrait = TextureRect.new()
-	profile_portrait.custom_minimum_size = Vector2(26, 32) if compact else Vector2(32, 38)
+	profile_portrait.custom_minimum_size = Vector2(28, 34) if compact else Vector2(36, 42)
 	profile_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	profile_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	profile_portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
@@ -281,21 +281,37 @@ func _build_hud() -> Control:
 	profile_name_label = Label.new()
 	profile_name_label.text = "Aventurero"
 	profile_name_label.clip_text = true
-	profile_name_label.add_theme_font_size_override("font_size", 12 if compact else 13)
+	profile_name_label.add_theme_font_size_override("font_size", 13 if compact else 15)
+	profile_name_label.add_theme_color_override("font_color", Color("#fff2d5"))
+	profile_name_label.add_theme_color_override("font_outline_color", Color("#25170f"))
+	profile_name_label.add_theme_constant_override("outline_size", 2)
 	profile_copy.add_child(profile_name_label)
 	profile_level_label = Label.new()
 	profile_level_label.text = "Nivel 1 · Héroe"
-	profile_level_label.add_theme_font_size_override("font_size", 9 if compact else 11)
-	profile_level_label.add_theme_color_override("font_color", Color(0.34, 0.22, 0.14, 1.0))
+	profile_level_label.clip_text = true
+	profile_level_label.add_theme_font_size_override("font_size", 12 if compact else 13)
+	profile_level_label.add_theme_color_override("font_color", Color("#edcf9a"))
+	profile_level_label.add_theme_color_override("font_outline_color", Color("#25170f"))
+	profile_level_label.add_theme_constant_override("outline_size", 2)
 	profile_copy.add_child(profile_level_label)
-	var profile_settings := TextureButton.new()
-	profile_settings.texture_normal = load(SETTINGS_ICON_PATH)
-	profile_settings.texture_hover = load(SETTINGS_ICON_PATH)
-	profile_settings.texture_pressed = load(SETTINGS_ICON_PATH)
-	profile_settings.ignore_texture_size = true
-	profile_settings.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
+	var profile_settings := Button.new()
+	profile_settings.flat = true
+	profile_settings.focus_mode = Control.FOCUS_NONE
 	profile_settings.tooltip_text = "Ajustes de cuenta y juego"
-	profile_settings.custom_minimum_size = Vector2(30, 30)
+	profile_settings.custom_minimum_size = Vector2(40, 40)
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+		profile_settings.add_theme_stylebox_override(state, StyleBoxEmpty.new())
+	var settings_gear := TextureRect.new()
+	settings_gear.texture = load(SETTINGS_ICON_PATH)
+	settings_gear.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	settings_gear.offset_left = 4
+	settings_gear.offset_top = 4
+	settings_gear.offset_right = -4
+	settings_gear.offset_bottom = -4
+	settings_gear.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	settings_gear.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	settings_gear.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	profile_settings.add_child(settings_gear)
 	profile_settings.pressed.connect(_open_settings)
 	profile_row.add_child(profile_settings)
 	profile_card.size_flags_horizontal = Control.SIZE_SHRINK_END
@@ -359,6 +375,8 @@ func _panel(title: String, min_size := Vector2(440, 0), close_enabled := true) -
 
 func _close_popup() -> void:
 	if camp_operational:
+		if is_instance_valid(platformer_stage) and bool(platformer_stage.get("hero_is_resting")):
+			platformer_stage.call("set_hero_standing")
 		_build_camp()
 
 
@@ -1133,14 +1151,14 @@ func _on_pvp_queue_pressed() -> void:
 
 
 func _open_gacha() -> void:
-	var view := _panel("Máquina Gacha", Vector2(500, 0))
+	var view := _panel("Máquina Gacha", Vector2(410, 0))
 	var introduction := HBoxContainer.new()
-	introduction.add_theme_constant_override("separation", 16)
+	introduction.add_theme_constant_override("separation", 10)
 	var chest_center := CenterContainer.new()
-	chest_center.custom_minimum_size = Vector2(110, 110)
+	chest_center.custom_minimum_size = Vector2(82, 82)
 	var portal := TextureRect.new()
 	portal.texture = load(CAMP_GACHA_PORTAL_PATH)
-	portal.custom_minimum_size = Vector2(96, 96)
+	portal.custom_minimum_size = Vector2(72, 72)
 	portal.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portal.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	portal.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -1148,16 +1166,16 @@ func _open_gacha() -> void:
 	chest_center.add_child(portal)
 	introduction.add_child(chest_center)
 	var gacha_copy := Label.new()
-	gacha_copy.text = "Invoca héroes con tickets o diamantes. Cada compañero conseguido se guarda en tu colección."
+	gacha_copy.text = "Invoca héroes con tickets o diamantes y amplía tu colección."
 	gacha_copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	gacha_copy.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	gacha_copy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	introduction.add_child(gacha_copy)
 	view.box.add_child(introduction)
 	gacha_feedback = _add_body(view.box, "")
-	gacha_feedback.custom_minimum_size.y = 30
+	gacha_feedback.custom_minimum_size.y = 24
 	gacha_result_portrait = TextureRect.new()
-	gacha_result_portrait.custom_minimum_size = Vector2(104, 104)
+	gacha_result_portrait.custom_minimum_size = Vector2(76, 76)
 	gacha_result_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	gacha_result_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	gacha_result_portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
@@ -1167,15 +1185,19 @@ func _open_gacha() -> void:
 	result_center.add_child(gacha_result_portrait)
 	view.box.add_child(result_center)
 	var common_button := _add_button(view.box, "Invocación común · 1 ticket", _summon.bind("tickets"), true)
+	common_button.custom_minimum_size.y = 34
 	common_button.icon = load(CURRENCY_ICON_PATHS["tickets"])
 	common_button.icon_max_width = 28
 	var premium_button := _add_button(view.box, "Invocación especial · 1 ticket", _summon.bind("premium_tickets"))
+	premium_button.custom_minimum_size.y = 34
 	premium_button.icon = load(CURRENCY_ICON_PATHS["premium_tickets"])
 	premium_button.icon_max_width = 28
 	var diamond_button := _add_button(view.box, "Invocación con diamantes · 100", _summon.bind("diamonds"))
+	diamond_button.custom_minimum_size.y = 34
 	diamond_button.icon = load(CURRENCY_ICON_PATHS["diamonds"])
 	diamond_button.icon_max_width = 28
-	_add_button(view.box, "Volver al campamento", _build_camp)
+	var back_button := _add_button(view.box, "Volver al campamento", _build_camp)
+	back_button.custom_minimum_size.y = 34
 	_show_page(Page.GACHA, view.panel)
 
 
@@ -1296,8 +1318,12 @@ func _update_hud() -> void:
 	if is_instance_valid(profile_name_label):
 		var nickname := str(profile.get("nickname", account_name)).strip_edges()
 		profile_name_label.text = nickname if not nickname.is_empty() else account_name
+	profile_name_label.tooltip_text = profile_name_label.text
 	if is_instance_valid(profile_level_label):
-		profile_level_label.text = "Nivel %d · %s" % [int(profile.get("hero_level", 1)), str(profile.get("hero_name", "Aventurero"))]
+		var hero := _selected_hero()
+		var hero_label := str(hero.get("character_name", profile.get("hero_name", "Héroe")))
+		profile_level_label.text = "Nivel %d · %s" % [int(profile.get("hero_level", 1)), hero_label]
+		profile_level_label.tooltip_text = "Nivel %d · %s" % [int(profile.get("hero_level", 1)), str(profile.get("hero_name", hero_label))]
 	if is_instance_valid(profile_portrait):
 		profile_portrait.texture = _hero_portrait_texture(_selected_hero())
 

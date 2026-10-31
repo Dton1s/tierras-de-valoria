@@ -523,9 +523,9 @@ func set_hero_resting() -> void:
 		hero_bob_tween.kill()
 	hero_is_resting = true
 	hero.play("idle")
-	hero.position = Vector2(390, 454)
+	hero.position = Vector2(378, 454)
 	hero.rotation = PI * 0.5
-	hero.scale = _hero_render_scale() * 0.68
+	hero.scale = _hero_render_scale() * 0.88
 	hero.offset = Vector2.ZERO
 	hero.z_index = 8
 	was_moving_with_keyboard = false

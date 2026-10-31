@@ -12,6 +12,10 @@ const REST_URL := CONFIG.PROJECT_URL + "/rest/v1/player_profiles"
 const SESSION_PATH := "user://valoria_supabase_session.cfg"
 const REQUEST_TIMEOUT := 20.0
 const GOOGLE_ACTIONS := ["google_login", "google_register"]
+const PROFILE_INTEGER_FIELDS := [
+	"hero_level", "coins", "tickets", "diamonds", "premium_tickets",
+	"xp", "summons", "last_seen", "last_coin_claim", "last_xp_claim",
+]
 
 var is_busy := false
 var is_authenticated := false
@@ -184,7 +188,11 @@ func save_profile(profile: Dictionary) -> bool:
 	if is_busy:
 		return false
 	_pending_profile = _to_database_profile(profile)
-	_pending_profile["user_id"] = str(current_user["id"])
+	_pending_profile["user_id"] = str(current_user.get("id", "")).strip_edges()
+	if str(_pending_profile["user_id"]).is_empty():
+		profile_saved.emit(false, {}, "Supabase no devolvió un ID de usuario válido.")
+		_pending_profile.clear()
+		return false
 	if _session_needs_refresh():
 		_after_refresh = "save_profile"
 		return _refresh_session()
@@ -326,10 +334,14 @@ func _send_profile_request(kind: String) -> bool:
 	_active_kind = kind
 	_active_action = kind
 	is_busy = true
-	var user_id := str(current_user.get("id", ""))
+	var user_id := str(current_user.get("id", "")).strip_edges()
+	if user_id.is_empty():
+		_finish_request_failure("Supabase no devolvió un ID de usuario válido.")
+		return false
 	if kind == "load_profile":
 		var url := REST_URL + "?select=*&user_id=eq." + user_id.uri_encode()
 		return _request_json(url, HTTPClient.METHOD_GET, {}, true)
+	_pending_profile["user_id"] = user_id
 	var url := REST_URL + "?on_conflict=user_id"
 	return _request_json(url, HTTPClient.METHOD_POST, _pending_profile, true, ["Prefer: resolution=merge-duplicates,return=representation"])
 
@@ -449,10 +461,19 @@ func _session_needs_refresh() -> bool:
 
 func _to_database_profile(source: Dictionary) -> Dictionary:
 	var fields := ["nickname", "hero_id", "hero_name", "onboarding_complete", "hero_level", "coins", "tickets", "diamonds", "premium_tickets", "xp", "summons", "owned_heroes", "last_seen", "last_coin_claim", "last_xp_claim"]
-	var result := {}
+	var result: Dictionary = {}
 	for field in fields:
-		if source.has(field):
-			result[field] = source[field]
+		if not source.has(field):
+			continue
+		var value: Variant = source[field]
+		if field in PROFILE_INTEGER_FIELDS:
+			result[field] = int(value)
+		elif field == "onboarding_complete":
+			result[field] = bool(value)
+		elif field == "owned_heroes":
+			result[field] = value if value is Array else []
+		else:
+			result[field] = str(value)
 	return result
 
 
