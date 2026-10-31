@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bhcog43ikigib"
+path="res://.godot/imported/Monster Demo__SharkEat__802163ad5829.wav-c5842e9a5600faff56c331445eac9159.sample"
+
+[deps]
+
+source_file="res://assets/audio/Monster Demo__SharkEat__802163ad5829.wav"
+dest_files=["res://.godot/imported/Monster Demo__SharkEat__802163ad5829.wav-c5842e9a5600faff56c331445eac9159.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

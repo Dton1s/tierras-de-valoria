@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://da5xgnwfby2uv"
+path="res://.godot/imported/Monster Demo__punch__306c47945967.wav-295e38a666600b6352eb1fe2a7a74a9b.sample"
+
+[deps]
+
+source_file="res://assets/audio/Monster Demo__punch__306c47945967.wav"
+dest_files=["res://.godot/imported/Monster Demo__punch__306c47945967.wav-295e38a666600b6352eb1fe2a7a74a9b.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
