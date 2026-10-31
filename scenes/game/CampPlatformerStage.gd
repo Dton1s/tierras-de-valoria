@@ -211,9 +211,9 @@ func _add_walkable_ground() -> void:
 func _add_cabin() -> void:
 	var wall := _add_sprite(HOUSE_WALL, Vector2(955, GROUND_LINE - 112), Vector2(2.1, 2.1), 10)
 	wall.name = "CabinWall"
-	var left_roof := _add_sprite(HOUSE_ROOF_RIGHT, Vector2(840, GROUND_LINE - 237), Vector2(1.8, 1.8), 12)
+	var left_roof := _add_sprite(HOUSE_ROOF_RIGHT, Vector2(840, GROUND_LINE - 247), Vector2(1.8, 1.8), 12)
 	left_roof.name = "CabinRoofLeft"
-	var right_roof := _add_sprite(HOUSE_ROOF_LEFT, Vector2(1070, GROUND_LINE - 237), Vector2(1.8, 1.8), 12)
+	var right_roof := _add_sprite(HOUSE_ROOF_LEFT, Vector2(1070, GROUND_LINE - 247), Vector2(1.8, 1.8), 12)
 	right_roof.name = "CabinRoofRight"
 	var door := _add_sprite(HOUSE_DOOR, Vector2(955, GROUND_LINE - 55), Vector2(1.55, 1.55), 14)
 	door.name = "CabinDoor"
@@ -265,7 +265,7 @@ func _add_blacksmith() -> void:
 	blacksmith.name = "BlacksmithAtForge"
 	blacksmith.sprite_frames = frames
 	blacksmith.animation = "work"
-	blacksmith.position = Vector2(745, GROUND_LINE - 50.0)
+	blacksmith.position = Vector2(745, GROUND_LINE - 30.0)
 	blacksmith.scale = Vector2(1.08, 1.08)
 	blacksmith.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	blacksmith.z_index = 15
@@ -279,7 +279,7 @@ func _add_goblin() -> void:
 	sprite.name = "GoblinGuide"
 	sprite.sprite_frames = _make_goblin_frames()
 	sprite.animation = "idle"
-	sprite.position = Vector2(180, GROUND_LINE - 53.0)
+	sprite.position = Vector2(180, GROUND_LINE - 40.0)
 	sprite.scale = Vector2(0.44, 0.44)
 	sprite.z_index = 15
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -309,8 +309,8 @@ func _add_knight() -> void:
 	knight.name = "ArenaKnight"
 	knight.sprite_frames = frames
 	knight.animation = "idle"
-	knight.position = Vector2(420, GROUND_LINE - 64.0)
-	knight.scale = Vector2(4.0, 4.0)
+	knight.position = Vector2(420, GROUND_LINE - 54.0)
+	knight.scale = Vector2(4.5, 4.5)
 	knight.z_index = 15
 	knight.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	world_root.add_child(knight)
