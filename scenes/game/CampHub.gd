@@ -133,6 +133,8 @@ func _build_interface() -> void:
 	ui_root = Control.new()
 	ui_root.name = "InterfaceRoot"
 	ui_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# La CanvasLayer interrumpe la herencia de Theme del Control raíz.
+	ui_root.theme = load(THEME_PATH)
 	ui_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ui_canvas.add_child(ui_root)
 	camp_world.remove_child(camp_modal_shade)
@@ -207,15 +209,6 @@ func _build_hud() -> Control:
 	header.name = "HUDHeader"
 	header.add_theme_constant_override("separation", 8 if compact else 16)
 	hud.add_child(header)
-	var brand := VBoxContainer.new()
-	brand.add_theme_constant_override("separation", 0)
-	brand.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	header.add_child(brand)
-	var camp_subtitle := Label.new()
-	camp_subtitle.text = "REFUGIO DEL BOSQUE"
-	camp_subtitle.add_theme_font_size_override("font_size", 11 if compact else 13)
-	camp_subtitle.add_theme_color_override("font_color", Color(0.95, 0.83, 0.58, 1.0))
-	brand.add_child(camp_subtitle)
 	var header_spacer := Control.new()
 	header_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(header_spacer)
