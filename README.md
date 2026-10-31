@@ -52,6 +52,12 @@ El resultado queda en `build/web/`. El preset incluye las tres escenas de juego 
 
 La shell de carga usa rutas relativas, mantiene la portada de Valoria y no necesita un servidor Node.
 
+## Progreso web · 31 de octubre de 2026
+
+- Ajustado el arranque del campamento: el héroe elegido se configura antes de construir el escenario y la animación de Lyria usa cuatro poses para reducir el uso de memoria gráfica en navegadores.
+- La escena crea primero su fondo y comprueba los metadatos de Supabase de forma segura, incluso si el proveedor no devuelve `user_metadata`.
+- Exportación web publicada en GitHub Pages con la etiqueta `valoria-camp-webfix-20261031-3`. La portada y el menú principal cargan; queda confirmar el campamento con una sesión autenticada en el navegador de prueba.
+
 ## Contenido del perfil
 
 El perfil remoto guarda nickname, héroe inicial, nivel, experiencia, monedas, tickets, diamantes, invocaciones, héroes obtenidos y temporizadores AFK. Si Supabase no responde, el juego mantiene una copia local y muestra un mensaje; la disponibilidad global del nickname requiere conexión.
