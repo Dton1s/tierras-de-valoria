@@ -740,11 +740,13 @@ func _add_location_hotspot(title: String, subtitle: String, visual: Control, cal
 
 
 func _make_sprite_visual(texture: Texture2D, dimensions: Vector2) -> Control:
+	var world_scale := clampf(minf(get_viewport_rect().size.x / 1152.0, get_viewport_rect().size.y / 720.0), 0.62, 1.0)
+	var scaled_dimensions := dimensions * world_scale
 	var frame := CenterContainer.new()
-	frame.custom_minimum_size = Vector2(minf(124.0, dimensions.x + 20.0), 96)
+	frame.custom_minimum_size = scaled_dimensions + Vector2(12, 8)
 	var sprite := TextureRect.new()
 	sprite.texture = texture
-	sprite.custom_minimum_size = dimensions
+	sprite.custom_minimum_size = scaled_dimensions
 	sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
@@ -755,29 +757,32 @@ func _make_sprite_visual(texture: Texture2D, dimensions: Vector2) -> Control:
 
 func _make_bed_visual(hero_texture: Texture2D, compact := false) -> Control:
 	var bed_visual := Control.new()
-	var bed_size := Vector2(96, 56) if compact else Vector2(118, 64)
+	var world_scale := clampf(minf(get_viewport_rect().size.x / 1152.0, get_viewport_rect().size.y / 720.0), 0.62, 1.0)
+	var bed_size := (Vector2(76, 48) if compact else Vector2(118, 64)) * world_scale
 	bed_visual.custom_minimum_size = bed_size
 	var bed := ColorRect.new()
 	bed.color = Color(0.30, 0.16, 0.08, 1.0)
 	bed.custom_minimum_size = bed_size
+	bed.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bed.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bed_visual.add_child(bed)
 	var mattress := ColorRect.new()
 	mattress.color = Color(0.91, 0.77, 0.54, 1.0)
-	mattress.position = Vector2(5, 5)
-	mattress.size = bed_size - Vector2(10, 14)
+	mattress.position = Vector2(5, 5) * world_scale
+	mattress.size = bed_size - Vector2(10, 14) * world_scale
 	mattress.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bed_visual.add_child(mattress)
 	var pillow := ColorRect.new()
 	pillow.color = Color(1.0, 0.92, 0.73, 1.0)
-	pillow.position = Vector2(10, 10)
-	pillow.size = Vector2(22, bed_size.y - 24)
+	pillow.position = Vector2(10, 10) * world_scale
+	pillow.size = Vector2(22, bed_size.y / world_scale - 24) * world_scale
 	pillow.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bed_visual.add_child(pillow)
 	var sleeper := TextureRect.new()
 	sleeper.texture = hero_texture
-	sleeper.custom_minimum_size = Vector2(38, 48) if compact else Vector2(46, 56)
-	sleeper.position = Vector2(30, 4)
+	sleeper.custom_minimum_size = (Vector2(32, 40) if compact else Vector2(46, 56)) * world_scale
+	sleeper.position = Vector2(29, 4) * world_scale
+	sleeper.size = sleeper.custom_minimum_size
 	sleeper.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	sleeper.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	sleeper.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
@@ -785,7 +790,7 @@ func _make_bed_visual(hero_texture: Texture2D, compact := false) -> Control:
 	bed_visual.add_child(sleeper)
 	var sleep_letters := Label.new()
 	sleep_letters.text = "Z z"
-	sleep_letters.position = Vector2(bed_size.x - 20, -8)
+	sleep_letters.position = Vector2(bed_size.x - 20 * world_scale, -8 * world_scale)
 	sleep_letters.add_theme_font_size_override("font_size", 15 if not compact else 11)
 	sleep_letters.add_theme_color_override("font_color", Color(1.0, 0.92, 0.66, 1.0))
 	sleep_letters.add_theme_color_override("font_outline_color", Color(0.18, 0.1, 0.05, 1.0))
@@ -796,12 +801,13 @@ func _make_bed_visual(hero_texture: Texture2D, compact := false) -> Control:
 
 
 func _make_gacha_machine_visual(compact := false) -> Control:
+	var world_scale := clampf(minf(get_viewport_rect().size.x / 1152.0, get_viewport_rect().size.y / 720.0), 0.62, 1.0)
 	var machine := CenterContainer.new()
-	machine.custom_minimum_size = Vector2(92, 82) if compact else Vector2(110, 96)
+	machine.custom_minimum_size = (Vector2(72, 70) if compact else Vector2(110, 96)) * world_scale
 	machine.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var portal_icon := TextureRect.new()
 	portal_icon.texture = load(CAMP_GACHA_PORTAL_PATH)
-	portal_icon.custom_minimum_size = Vector2(72, 72) if compact else Vector2(92, 92)
+	portal_icon.custom_minimum_size = (Vector2(68, 68) if compact else Vector2(92, 92)) * world_scale
 	portal_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portal_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	portal_icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
