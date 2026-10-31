@@ -21,7 +21,7 @@ const HOUSE_DOOR := "res://assets/sprites/environments/medieval_village_intc2748
 const HOUSE_WINDOW := "res://assets/sprites/environments/medieval_village_intc2748/Medieval House/Window_1.png"
 const CHEST_SHEET := "res://assets/sprites/props/animated_chests_admurin/Chests.png"
 const BLACKSMITH_SHEET := "res://assets/sprites/characters/npcs/blacksmith_mattz/BLACKSMITH.png"
-const GOBLIN_BLINK_SHEET := "res://assets/sprites/enemies/craftpix-net-228980-free-top-down-goblin-char__Front - Idle blinking__eafdf012a8f7.png"
+const GOBLIN_BLINK_SHEET: Texture2D = preload("res://assets/sprites/enemies/craftpix-net-228980-free-top-down-goblin-char__Front - Idle blinking__eafdf012a8f7.png")
 const WARRIOR_IDLE_FRAMES := [
 	"res://assets/sprites/characters/CartoonWarrior__IdleSword_01__9c2e6a25dbf0.png",
 	"res://assets/sprites/characters/CartoonWarrior__IdleSword_02__08c74be03e78.png",
@@ -457,7 +457,7 @@ func _make_goblin_frames() -> SpriteFrames:
 	frames.add_animation("idle")
 	frames.set_animation_speed("idle", 7.0)
 	frames.set_animation_loop("idle", true)
-	var sheet := load(GOBLIN_BLINK_SHEET) as Texture2D
+	var sheet := GOBLIN_BLINK_SHEET
 	if sheet != null:
 		var frame_size := sheet.get_size().x / 4.0
 		for frame_index in range(16):
