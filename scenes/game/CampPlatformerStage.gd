@@ -369,8 +369,8 @@ func _add_house_furniture() -> void:
 	_add_room_polygon("BedRugInset", Color("#b87b4a"), PackedVector2Array([
 		Vector2(230, 481), Vector2(455, 481), Vector2(493, 538), Vector2(268, 538)
 	]), 4)
-	_add_room_rect("BedLegLeftBack", Color("#4e3020"), Rect2(253, 446, 14, 63), 5)
-	_add_room_rect("BedLegRightBack", Color("#4e3020"), Rect2(464, 446, 14, 63), 5)
+	_add_room_rect("BedLegLeftBack", Color("#4e3020"), Rect2(253, 446, 14, 69), 5)
+	_add_room_rect("BedLegRightBack", Color("#4e3020"), Rect2(464, 446, 14, 69), 5)
 	_add_room_polygon("BedFrame", Color("#54331f"), PackedVector2Array([
 		Vector2(242, 405), Vector2(451, 405), Vector2(500, 470), Vector2(291, 470)
 	]), 6)
@@ -389,8 +389,8 @@ func _add_house_furniture() -> void:
 	_add_room_polygon("BedQuiltFold", Color("#b7684e"), PackedVector2Array([
 		Vector2(357, 420), Vector2(438, 420), Vector2(450, 433), Vector2(369, 433)
 	]), 10)
-	_add_room_rect("BedLegLeftFront", Color("#4e3020"), Rect2(282, 462, 14, 46), 11)
-	_add_room_rect("BedLegRightFront", Color("#4e3020"), Rect2(479, 462, 14, 46), 11)
+	_add_room_rect("BedLegLeftFront", Color("#4e3020"), Rect2(282, 462, 14, 53), 11)
+	_add_room_rect("BedLegRightFront", Color("#4e3020"), Rect2(479, 462, 14, 53), 11)
 
 	var animated_chest := AnimatedSprite2D.new()
 	animated_chest.name = "AnimatedRewardChest"
