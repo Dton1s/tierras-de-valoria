@@ -1,6 +1,8 @@
 extends Control
 ## Campamento inicial, onboarding y perfil persistente de Tierras de Valoria.
 
+@onready var _supabase_manager: Variant = get_node_or_null("/root/SupabaseManager")
+
 const BACKGROUND_PATH := "res://assets/sprites/environments/free-cartoon-forest-game-backgrounds__Cartoon_Forest_BG_01__e36fbfd52092.png"
 const CAMP_CHEST_PATH := "res://assets/ui/Stylized_Game_Essentials_147_Icons__01_wooden_chest__ac7d7fa93e1e.png"
 const CAMP_GACHA_PORTAL_PATH := "res://assets/ui/cartoon-game-icons-free-sampler-icons__anime_raid_portal__53dfbb1cbc8f.png"
@@ -80,24 +82,24 @@ func _ready() -> void:
 	# Así la escena nunca queda como un canvas vacío si el proveedor omite un campo.
 	_build_interface()
 	print("[CampHub] Interfaz base construida")
-	account_uid = str(SupabaseManager.current_user.get("id", ""))
-	var metadata_value: Variant = SupabaseManager.current_user.get("user_metadata", {})
+	account_uid = str(_supabase_manager.current_user.get("id", ""))
+	var metadata_value: Variant = _supabase_manager.current_user.get("user_metadata", {})
 	var user_metadata: Dictionary = metadata_value if metadata_value is Dictionary else {}
 	account_name = str(user_metadata.get("display_name", "")).strip_edges()
 	if account_name.is_empty():
-		account_name = str(SupabaseManager.current_user.get("email", "Aventurero"))
+		account_name = str(_supabase_manager.current_user.get("email", "Aventurero"))
 	if account_uid.is_empty():
 		account_uid = "guest"
 	get_viewport().size_changed.connect(_on_viewport_resized)
 	_load_profile()
 	print("[CampHub] Perfil local cargado para cuenta %s" % account_uid)
-	SupabaseManager.profile_loaded.connect(_on_supabase_profile_loaded)
-	SupabaseManager.profile_saved.connect(_on_supabase_profile_saved)
-	SupabaseManager.auth_completed.connect(_on_supabase_auth_completed)
+	_supabase_manager.profile_loaded.connect(_on_supabase_profile_loaded)
+	_supabase_manager.profile_saved.connect(_on_supabase_profile_saved)
+	_supabase_manager.auth_completed.connect(_on_supabase_auth_completed)
 	_load_cloud_profile()
-	if not SupabaseManager.transient_auth_notice.is_empty():
-		_set_status(SupabaseManager.transient_auth_notice)
-		SupabaseManager.transient_auth_notice = ""
+	if not _supabase_manager.transient_auth_notice.is_empty():
+		_set_status(_supabase_manager.transient_auth_notice)
+		_supabase_manager.transient_auth_notice = ""
 
 
 func _build_interface() -> void:
@@ -1118,11 +1120,11 @@ func _summon(currency: String) -> void:
 
 func _open_settings() -> void:
 	var view := _panel("Cuenta y ajustes", Vector2(480, 0))
-	_add_body(view.box, "Aventurero: %s\nCuenta Supabase: %s\nID: %s" % [str(profile.get("nickname", account_name)), str(SupabaseManager.current_user.get("email", "")), account_uid])
-	var google_linked := SupabaseManager.has_google_identity()
+	_add_body(view.box, "Aventurero: %s\nCuenta Supabase: %s\nID: %s" % [str(profile.get("nickname", account_name)), str(_supabase_manager.current_user.get("email", "")), account_uid])
+	var google_linked: bool = _supabase_manager.has_google_identity()
 	_add_body(view.box, "Cuenta de Google: %s" % ("Enlazada" if google_linked else "Sin enlazar"))
 	google_link_button = _add_button(view.box, "Google enlazado ✓" if google_linked else "Enlazar con Google", _on_google_link_pressed, not google_linked)
-	google_link_button.disabled = google_linked or not SupabaseManager.is_authenticated
+	google_link_button.disabled = google_linked or not _supabase_manager.is_authenticated
 	_add_audio_slider(view.box, "Volumen general", &"Master")
 	_add_audio_slider(view.box, "Música", &"Music")
 	_add_audio_slider(view.box, "Efectos", &"SFX")
@@ -1135,14 +1137,14 @@ func _on_google_link_pressed() -> void:
 	_set_status("Conectando la cuenta con Google…")
 	if is_instance_valid(google_link_button):
 		google_link_button.disabled = true
-	SupabaseManager.link_google_identity()
+	_supabase_manager.link_google_identity()
 
 
 func _on_supabase_auth_completed(action: String, success: bool, result: Dictionary) -> void:
 	if action != "google_link":
 		return
 	if is_instance_valid(google_link_button):
-		google_link_button.disabled = success or SupabaseManager.has_google_identity()
+		google_link_button.disabled = success or _supabase_manager.has_google_identity()
 	if success:
 		_set_status("Tu cuenta de Google se ha enlazado correctamente.")
 	else:
@@ -1177,7 +1179,7 @@ func _on_audio_setting_changed(value: float, bus_name: StringName) -> void:
 
 
 func _sign_out() -> void:
-	SupabaseManager.sign_out()
+	_supabase_manager.sign_out()
 	var error := get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
 	if error != OK:
 		push_error("No se pudo volver al menú principal (%d)." % error)
@@ -1250,11 +1252,11 @@ func _save_local_profile() -> bool:
 
 
 func _load_cloud_profile() -> void:
-	if account_uid == "guest" or not SupabaseManager.is_authenticated:
+	if account_uid == "guest" or not _supabase_manager.is_authenticated:
 		_set_status("No hay sesión de Supabase. El perfil se guardará en este dispositivo.")
 		_begin_onboarding_or_camp()
 		return
-	if not SupabaseManager.load_profile() and not SupabaseManager.is_busy:
+	if not _supabase_manager.load_profile() and not _supabase_manager.is_busy:
 		_set_status("No se pudo solicitar el perfil remoto. Se usará la copia local.")
 		_begin_onboarding_or_camp()
 
@@ -1288,14 +1290,14 @@ func _begin_onboarding_or_camp() -> void:
 
 
 func _save_cloud_profile() -> void:
-	if account_uid == "guest" or not SupabaseManager.is_authenticated:
+	if account_uid == "guest" or not _supabase_manager.is_authenticated:
 		return
-	if SupabaseManager.is_busy:
+	if _supabase_manager.is_busy:
 		profile_save_pending = true
 		return
-	if not SupabaseManager.save_profile(profile):
-		profile_save_pending = SupabaseManager.is_busy
-		if not SupabaseManager.is_busy:
+	if not _supabase_manager.save_profile(profile):
+		profile_save_pending = _supabase_manager.is_busy
+		if not _supabase_manager.is_busy:
 			_set_status("El progreso está guardado localmente, pero Supabase no pudo recibirlo.")
 
 
@@ -1307,12 +1309,12 @@ func _on_supabase_profile_saved(success: bool, saved_profile: Dictionary, messag
 		_save_local_profile()
 	else:
 		_set_status("Progreso guardado localmente. No se pudo sincronizar con Supabase: %s" % message)
-	if profile_save_pending and not SupabaseManager.is_busy:
+	if profile_save_pending and not _supabase_manager.is_busy:
 		call_deferred("_flush_pending_cloud_save")
 
 
 func _flush_pending_cloud_save() -> void:
-	if not profile_save_pending or SupabaseManager.is_busy:
+	if not profile_save_pending or _supabase_manager.is_busy:
 		return
 	profile_save_pending = false
 	_save_cloud_profile()

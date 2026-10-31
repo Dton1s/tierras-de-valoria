@@ -1,6 +1,8 @@
 extends Control
 ## Menú de campamento con perfil, ajustes y sesión de Supabase.
 
+@onready var _supabase_manager: Variant = get_node_or_null("/root/SupabaseManager")
+
 @onready var camp_panel: PanelContainer = %CampPanel
 @onready var settings_panel: PanelContainer = %SettingsPanel
 @onready var session_feedback: Label = %SessionFeedback
@@ -17,7 +19,7 @@ extends Control
 
 
 func _ready() -> void:
-	print("[CampSelection] Menú listo; sesión autenticada: %s" % str(SupabaseManager.is_authenticated))
+	print("[CampSelection] Menú listo; sesión autenticada: %s" % str(_supabase_manager.is_authenticated))
 	_connect_button(%EnterHubButton, _on_enter_hub_pressed)
 	_connect_button(%OpenSettingsButton, _show_settings)
 	_connect_button(%DisconnectButton, _on_disconnect_pressed)
@@ -27,7 +29,7 @@ func _ready() -> void:
 	music_volume.value_changed.connect(_on_volume_changed.bind(&"Music", %MusicValue))
 	sfx_volume.value_changed.connect(_on_volume_changed.bind(&"SFX", %SFXValue))
 	window_mode.item_selected.connect(_on_window_mode_selected)
-	if not is_instance_valid(SupabaseManager) or not SupabaseManager.is_authenticated or SupabaseManager.current_user.is_empty():
+	if not is_instance_valid(_supabase_manager) or not _supabase_manager.is_authenticated or _supabase_manager.current_user.is_empty():
 		call_deferred("_return_to_main_menu")
 		return
 	_sync_account_info()
@@ -48,7 +50,7 @@ func _return_to_main_menu() -> void:
 
 
 func _sync_account_info() -> void:
-	var user := SupabaseManager.current_user
+	var user: Dictionary = _supabase_manager.current_user
 	var metadata: Dictionary = user.get("user_metadata", {})
 	var display_name := str(metadata.get("display_name", "")).strip_edges()
 	var email := str(user.get("email", ""))
@@ -66,12 +68,12 @@ func _sync_account_info() -> void:
 
 
 func _show_transient_login_feedback() -> void:
-	if SupabaseManager.transient_auth_notice.is_empty():
+	if _supabase_manager.transient_auth_notice.is_empty():
 		session_feedback.hide()
 		return
-	session_feedback.text = SupabaseManager.transient_auth_notice
+	session_feedback.text = _supabase_manager.transient_auth_notice
 	session_feedback.show()
-	SupabaseManager.transient_auth_notice = ""
+	_supabase_manager.transient_auth_notice = ""
 	var timer := Timer.new()
 	timer.one_shot = true
 	timer.wait_time = 12.0
@@ -114,7 +116,7 @@ func _on_enter_hub_pressed() -> void:
 
 
 func _on_disconnect_pressed() -> void:
-	SupabaseManager.sign_out()
+	_supabase_manager.sign_out()
 	var scene_error := get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
 	if scene_error != OK:
 		push_error("No se pudo volver al menú principal (código %d)." % scene_error)

@@ -2,6 +2,8 @@ extends Control
 ## Menú inicial. Login y registro usan Supabase Auth REST.
 ## Los ajustes se aplican a esta sesion; todavia no se guardan en disco.
 
+@onready var _supabase_manager: Variant = get_node_or_null("/root/SupabaseManager")
+
 @onready var base_panel: PanelContainer = %BasePanel
 @onready var login_panel: PanelContainer = %LoginPanel
 @onready var register_panel: PanelContainer = %RegisterPanel
@@ -41,9 +43,9 @@ func _ready() -> void:
 	_show_panel(base_panel)
 	# Las señales de navegación ya están declaradas en MainMenu.tscn. Conecta
 	# Supabase al final para que un fallo del autoload no deje la pantalla muda.
-	if is_instance_valid(SupabaseManager) and not SupabaseManager.auth_completed.is_connected(_on_supabase_auth_completed):
-		SupabaseManager.auth_completed.connect(_on_supabase_auth_completed)
-	if is_instance_valid(SupabaseManager) and SupabaseManager.is_authenticated and not SupabaseManager.current_user.is_empty():
+	if is_instance_valid(_supabase_manager) and not _supabase_manager.auth_completed.is_connected(_on_supabase_auth_completed):
+		_supabase_manager.auth_completed.connect(_on_supabase_auth_completed)
+	if is_instance_valid(_supabase_manager) and _supabase_manager.is_authenticated and not _supabase_manager.current_user.is_empty():
 		_continue_to_camp.call_deferred()
 	print("[MainMenu] Listo; botones de navegación conectados desde la escena.")
 
@@ -115,7 +117,7 @@ func _on_login_submit() -> void:
 		return
 	login_status.hide()
 	login_submit.disabled = true
-	if not SupabaseManager.sign_in(email, login_password.text):
+	if not _supabase_manager.sign_in(email, login_password.text):
 		login_submit.disabled = false
 
 
@@ -128,7 +130,7 @@ func _on_register_submit() -> void:
 		return
 	register_status.hide()
 	register_submit.disabled = true
-	if not SupabaseManager.create_account(email, password, account_name):
+	if not _supabase_manager.create_account(email, password, account_name):
 		register_submit.disabled = false
 
 
@@ -143,17 +145,17 @@ func _on_google_register_pressed() -> void:
 func _start_google_auth(action: String, status: Label, button: Button) -> void:
 	status.hide()
 	button.disabled = true
-	if not SupabaseManager.sign_in_with_google(action):
+	if not _supabase_manager.sign_in_with_google(action):
 		button.disabled = false
 
 
 func _on_supabase_auth_completed(action: String, success: bool, result: Dictionary) -> void:
 	var is_register_action := action in ["register", "google_register"]
 	var status: Label = register_status if is_register_action else login_status
-	login_submit.disabled = SupabaseManager.is_busy
-	register_submit.disabled = SupabaseManager.is_busy
-	google_login_button.disabled = SupabaseManager.is_busy
-	google_register_button.disabled = SupabaseManager.is_busy
+	login_submit.disabled = _supabase_manager.is_busy
+	register_submit.disabled = _supabase_manager.is_busy
+	google_login_button.disabled = _supabase_manager.is_busy
+	google_register_button.disabled = _supabase_manager.is_busy
 	if success:
 		if bool(result.get("needs_confirmation", false)):
 			_show_auth_status(status, str(result.get("message", "Cuenta creada. Confirma tu correo y luego inicia sesión.")), false)
@@ -169,18 +171,18 @@ func _on_supabase_auth_completed(action: String, success: bool, result: Dictiona
 		_show_auth_status(status, str(result.get("message", "No se pudo completar la autenticación.")), true)
 		print("[Supabase] Error de autenticación: %s" % str(result.get("message", "Error desconocido")))
 	if action == "google_link" and success:
-		SupabaseManager.return_to_camp_hub_after_oauth = false
-		SupabaseManager.transient_auth_notice = "Tu cuenta de Google se ha enlazado correctamente."
+		_supabase_manager.return_to_camp_hub_after_oauth = false
+		_supabase_manager.transient_auth_notice = "Tu cuenta de Google se ha enlazado correctamente."
 		_continue_to_hub()
 		return
-	if action == "restore_session" and success and SupabaseManager.return_to_camp_hub_after_oauth:
-		SupabaseManager.return_to_camp_hub_after_oauth = false
+	if action == "restore_session" and success and _supabase_manager.return_to_camp_hub_after_oauth:
+		_supabase_manager.return_to_camp_hub_after_oauth = false
 		_continue_to_hub()
 		return
 	if action in ["login", "register", "google_login", "google_register", "restore_session"] and success:
 		login_password.clear()
 		register_password.clear()
-		SupabaseManager.transient_auth_notice = (
+		_supabase_manager.transient_auth_notice = (
 			"Bienvenido a Valoria, %s" % _get_user_display_name(result)
 		)
 		_continue_to_camp()
@@ -200,14 +202,14 @@ func _continue_to_camp() -> void:
 		return
 	var scene_error := get_tree().change_scene_to_file("res://scenes/ui/CampSelectionMenu.tscn")
 	if scene_error != OK:
-		SupabaseManager.transient_auth_notice = ""
+		_supabase_manager.transient_auth_notice = ""
 		_show_auth_status(login_status, "La cuenta se inició, pero no se pudo abrir el campamento.", true)
 
 
 func _continue_to_hub() -> void:
 	var scene_error := get_tree().change_scene_to_file("res://scenes/game/CampHub.tscn")
 	if scene_error != OK:
-		SupabaseManager.transient_auth_notice = ""
+		_supabase_manager.transient_auth_notice = ""
 		_show_auth_status(login_status, "La cuenta se enlazó, pero no se pudo abrir el campamento.", true)
 
 
