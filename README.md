@@ -56,7 +56,8 @@ La shell de carga usa rutas relativas, mantiene la portada de Valoria y no neces
 
 - Ajustado el arranque del campamento: el héroe elegido se configura antes de construir el escenario y la animación de Lyria usa cuatro poses para reducir el uso de memoria gráfica en navegadores.
 - La escena crea primero su fondo y comprueba los metadatos de Supabase de forma segura, incluso si el proveedor no devuelve `user_metadata`.
-- Exportación web publicada en GitHub Pages con la etiqueta `valoria-camp-webfix-20261031-3`. La portada y el menú principal cargan; queda confirmar el campamento con una sesión autenticada en el navegador de prueba.
+- OAuth usa ahora el acceso directo de `JavaScriptBridge` al objeto `window`, sin `eval()`, para cumplir políticas CSP estrictas. La consola registra cada paso al abrir el menú y construir el campamento.
+- Exportación web publicada en GitHub Pages con la etiqueta `valoria-camp-diagnostics-20261031-4`. La portada y el menú principal cargan; queda confirmar el campamento con una sesión autenticada en el navegador de prueba.
 
 ## Contenido del perfil
 

@@ -39,6 +39,20 @@ func _ready() -> void:
 		_restore_saved_session()
 
 
+func _current_app_url() -> String:
+	if not OS.has_feature("web"):
+		return ""
+	var browser_window = JavaScriptBridge.get_interface("window")
+	return str(browser_window.location.origin) + str(browser_window.location.pathname)
+
+
+func _navigate_browser_to(destination: String) -> void:
+	if not OS.has_feature("web"):
+		return
+	var browser_window = JavaScriptBridge.get_interface("window")
+	browser_window.location.assign(destination)
+
+
 func create_account(email: String, password: String, display_name: String) -> bool:
 	return _start_auth_request("register", "/signup", {
 		"email": email.strip_edges().to_lower(),
@@ -65,7 +79,7 @@ func sign_in_with_google(action: String) -> bool:
 		auth_completed.emit(action, false, {"message": "El acceso con Google está disponible en la versión web del juego."})
 		return false
 
-	var app_url := str(JavaScriptBridge.eval("window.location.origin + window.location.pathname"))
+	var app_url := _current_app_url()
 	if not app_url.begins_with("https://") and not app_url.begins_with("http://localhost") and not app_url.begins_with("http://127.0.0.1"):
 		auth_completed.emit(action, false, {"message": "Abre Valoria desde su dirección web para continuar con Google."})
 		return false
@@ -78,7 +92,7 @@ func sign_in_with_google(action: String) -> bool:
 	authorize_url += "&redirect_to=" + app_url.uri_encode()
 	authorize_url += "&code_challenge=" + challenge.uri_encode()
 	authorize_url += "&code_challenge_method=s256"
-	JavaScriptBridge.eval("window.location.assign(%s)" % JSON.stringify(authorize_url))
+	_navigate_browser_to(authorize_url)
 	return true
 
 
@@ -115,7 +129,7 @@ func link_google_identity() -> bool:
 
 
 func _begin_google_identity_link() -> bool:
-	var app_url := str(JavaScriptBridge.eval("window.location.origin + window.location.pathname"))
+	var app_url := _current_app_url()
 	if not app_url.begins_with("https://") and not app_url.begins_with("http://localhost") and not app_url.begins_with("http://127.0.0.1"):
 		auth_completed.emit("google_link", false, {"message": "Abre Valoria desde su dirección web para enlazar Google."})
 		return false
@@ -201,7 +215,8 @@ func _restore_saved_session() -> void:
 func _resume_google_oauth_callback() -> bool:
 	if not OS.has_feature("web"):
 		return false
-	var current_url := str(JavaScriptBridge.eval("window.location.href"))
+	var browser_window = JavaScriptBridge.get_interface("window")
+	var current_url := str(browser_window.location.href)
 	var query_start := current_url.find("?")
 	if query_start < 0:
 		return false
@@ -218,7 +233,8 @@ func _resume_google_oauth_callback() -> bool:
 	var action := str(pending.get_value("oauth", "action", "google_login"))
 	var verifier := str(pending.get_value("oauth", "verifier", ""))
 	_clear_pending_oauth()
-	JavaScriptBridge.eval("history.replaceState({}, document.title, window.location.origin + window.location.pathname)")
+	var clean_url := str(browser_window.location.origin) + str(browser_window.location.pathname)
+	browser_window.history.replaceState(JavaScriptBridge.create_object("Object"), str(browser_window.document.title), clean_url)
 
 	if params.has("error"):
 		var oauth_error := str(params.get("error_description", params.get("error", "error desconocido")))
@@ -377,7 +393,7 @@ func _on_request_completed(result: int, response_code: int, _headers: PackedStri
 			if not authorize_url.begins_with("https://"):
 				auth_completed.emit("google_link", false, {"message": "Supabase no devolvió una dirección segura para enlazar Google."})
 				return
-			JavaScriptBridge.eval("window.location.assign(%s)" % JSON.stringify(authorize_url))
+			_navigate_browser_to(authorize_url)
 
 
 func _complete_auth(response: Dictionary, action: String) -> void:

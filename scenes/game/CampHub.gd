@@ -74,10 +74,12 @@ var pve_effect_timer: Timer
 var pve_effect_frames: Array[Texture2D] = []
 var pve_effect_frame_index := 0
 func _ready() -> void:
+	print("[CampHub] Inicio de _ready")
 	theme = load(THEME_PATH)
 	# Construye el fondo y el estado de carga antes de leer metadatos remotos.
 	# Así la escena nunca queda como un canvas vacío si el proveedor omite un campo.
 	_build_interface()
+	print("[CampHub] Interfaz base construida")
 	account_uid = str(SupabaseManager.current_user.get("id", ""))
 	var metadata_value: Variant = SupabaseManager.current_user.get("user_metadata", {})
 	var user_metadata: Dictionary = metadata_value if metadata_value is Dictionary else {}
@@ -88,6 +90,7 @@ func _ready() -> void:
 		account_uid = "guest"
 	get_viewport().size_changed.connect(_on_viewport_resized)
 	_load_profile()
+	print("[CampHub] Perfil local cargado para cuenta %s" % account_uid)
 	SupabaseManager.profile_loaded.connect(_on_supabase_profile_loaded)
 	SupabaseManager.profile_saved.connect(_on_supabase_profile_saved)
 	SupabaseManager.auth_completed.connect(_on_supabase_auth_completed)
@@ -632,6 +635,7 @@ func _enter_camp() -> void:
 
 
 func _build_camp() -> void:
+	print("[CampHub] Construyendo campamento operativo")
 	camp_operational = true
 	page = Page.CAMP
 	for child in page_host.get_children():
@@ -643,6 +647,7 @@ func _build_camp() -> void:
 	camp_world.modulate = Color(1, 1, 1, 0)
 	if camp_points.get_child_count() == 0:
 		_populate_camp_world()
+	print("[CampHub] Mundo del campamento añadido")
 	var world_tween := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	world_tween.tween_property(camp_world, "modulate", Color.WHITE, 0.34)
 	_update_hud()
@@ -1255,6 +1260,7 @@ func _load_cloud_profile() -> void:
 
 
 func _on_supabase_profile_loaded(success: bool, cloud_profile: Dictionary, message: String) -> void:
+	print("[CampHub] Perfil remoto recibido; éxito=%s; campos=%d" % [str(success), cloud_profile.size()])
 	if success:
 		if cloud_profile.is_empty():
 			_set_status("Perfil nuevo. El nickname y el progreso se sincronizarán con Supabase.")

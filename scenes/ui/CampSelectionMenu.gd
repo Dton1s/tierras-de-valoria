@@ -17,6 +17,7 @@ extends Control
 
 
 func _ready() -> void:
+	print("[CampSelection] Menú listo; sesión autenticada: %s" % str(SupabaseManager.is_authenticated))
 	_connect_button(%EnterHubButton, _on_enter_hub_pressed)
 	_connect_button(%OpenSettingsButton, _show_settings)
 	_connect_button(%DisconnectButton, _on_disconnect_pressed)
@@ -99,7 +100,15 @@ func _show_settings() -> void:
 
 
 func _on_enter_hub_pressed() -> void:
-	var error := get_tree().change_scene_to_file("res://scenes/game/CampHub.tscn")
+	print("[CampSelection] Entrada solicitada; cargando CampHub.tscn")
+	var hub_scene := load("res://scenes/game/CampHub.tscn") as PackedScene
+	if hub_scene == null:
+		push_error("[CampSelection] No se pudo cargar CampHub.tscn.")
+		session_feedback.text = "No se pudo cargar el campamento. Vuelve al menú e inténtalo otra vez."
+		session_feedback.show()
+		return
+	print("[CampSelection] Escena cargada; cambiando al campamento")
+	var error := get_tree().change_scene_to_packed(hub_scene)
 	if error != OK:
 		push_error("No se pudo abrir el campamento de Tierras de Valoria (%d)." % error)
 
