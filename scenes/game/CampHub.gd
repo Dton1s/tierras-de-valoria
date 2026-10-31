@@ -45,7 +45,6 @@ var account_name := "Aventurero"
 var nickname_checked := false
 var checked_nickname := ""
 var profile_save_pending := false
-var pending_profile_action := ""
 var last_status := ""
 var camp_operational := false
 
@@ -479,19 +478,6 @@ func _on_check_nickname() -> void:
 	if nickname_checked and nickname == checked_nickname:
 		_accept_nickname_and_choose_hero(nickname)
 		return
-	if SupabaseManager.is_authenticated:
-		profile["nickname"] = nickname
-		_save_local_profile()
-		pending_profile_action = "nickname_check"
-		nickname_input.editable = false
-		nickname_button.disabled = true
-		_set_nickname_feedback("Comprobando disponibilidad y guardando el perfil…")
-		if not SupabaseManager.save_profile(profile) and pending_profile_action == "nickname_check":
-			pending_profile_action = ""
-			nickname_input.editable = true
-			nickname_button.disabled = false
-			_set_nickname_feedback("No se pudo enviar la solicitud. Revisa la conexión e inténtalo otra vez.", true)
-		return
 	if not _save_session_nickname(nickname):
 		_set_nickname_feedback("No se pudo guardar el nombre en este dispositivo. Comprueba el espacio disponible e inténtalo de nuevo.", true)
 		return
@@ -505,8 +491,7 @@ func _on_nickname_text_changed(_text: String) -> void:
 	nickname_checked = false
 	if is_instance_valid(nickname_button):
 		nickname_button.text = "Comprobar nombre"
-		if pending_profile_action.is_empty():
-			nickname_button.disabled = false
+		nickname_button.disabled = false
 
 
 func _valid_nickname(nickname: String) -> bool:
@@ -1345,22 +1330,6 @@ func _save_cloud_profile() -> void:
 
 
 func _on_supabase_profile_saved(success: bool, saved_profile: Dictionary, message: String) -> void:
-	if pending_profile_action == "nickname_check":
-		pending_profile_action = ""
-		nickname_input.editable = true
-		nickname_button.disabled = false
-		if success and str(saved_profile.get("nickname", "")) == nickname_input.text:
-			profile["nickname"] = nickname_input.text
-			_save_local_profile()
-			checked_nickname = nickname_input.text
-			nickname_checked = true
-			nickname_button.text = "Elegir nombre"
-			_set_nickname_feedback("Nickname disponible y guardado en tu perfil.")
-		else:
-			nickname_checked = false
-			nickname_button.text = "Comprobar nombre"
-			_set_nickname_feedback(message if not message.is_empty() else "El nickname ya está en uso. Prueba con otro.", true)
-		return
 	if success:
 		for key in saved_profile:
 			if profile.has(key):

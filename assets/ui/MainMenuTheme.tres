@@ -1,0 +1,176 @@
+[gd_resource type="Theme" load_steps=18 format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/Immortal.ttf" id="Font_Immortal"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/Vector_UI_Pack_dobo_ui__container_default__d50012f855ca.png" id="Texture_panel"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/cartoon_ui_pack__button wider idle__c16285a5db12.png" id="Texture_button"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/cartoon_ui_pack__button wider hover__2f32d42c610c.png" id="Texture_hover"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/cartoon_ui_pack__button wider clicked__a43b926b10da.png" id="Texture_pressed"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/cartoon_ui_pack__button wider idle__07dfc30e73d8.png" id="Texture_primary"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/cartoon_ui_pack__button wider hover__1463a0a14c42.png" id="Texture_primary_hover"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/cartoon_ui_pack__button wider clicked__f01f81957e0f.png" id="Texture_primary_pressed"]
+
+[sub_resource type="StyleBoxTexture" id="Style_panel"]
+resource_name = "panel - 9-slice"
+content_margin_left = 28.0
+content_margin_top = 28.0
+content_margin_right = 28.0
+content_margin_bottom = 28.0
+texture = ExtResource("Texture_panel")
+texture_margin_left = 96.0
+texture_margin_top = 40.0
+texture_margin_right = 120.0
+texture_margin_bottom = 52.0
+
+[sub_resource type="StyleBoxTexture" id="Style_button"]
+resource_name = "button - 9-slice"
+content_margin_left = 18.0
+content_margin_top = 12.0
+content_margin_right = 18.0
+content_margin_bottom = 12.0
+texture = ExtResource("Texture_button")
+texture_margin_left = 16.0
+texture_margin_top = 12.0
+texture_margin_right = 16.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="Style_hover"]
+resource_name = "hover - 9-slice"
+content_margin_left = 18.0
+content_margin_top = 12.0
+content_margin_right = 18.0
+content_margin_bottom = 12.0
+texture = ExtResource("Texture_hover")
+texture_margin_left = 16.0
+texture_margin_top = 12.0
+texture_margin_right = 16.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="Style_pressed"]
+resource_name = "pressed - 9-slice"
+content_margin_left = 18.0
+content_margin_top = 12.0
+content_margin_right = 18.0
+content_margin_bottom = 12.0
+texture = ExtResource("Texture_pressed")
+texture_margin_left = 16.0
+texture_margin_top = 12.0
+texture_margin_right = 16.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="Style_primary"]
+resource_name = "primary - 9-slice"
+content_margin_left = 18.0
+content_margin_top = 12.0
+content_margin_right = 18.0
+content_margin_bottom = 12.0
+texture = ExtResource("Texture_primary")
+texture_margin_left = 16.0
+texture_margin_top = 12.0
+texture_margin_right = 16.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="Style_primary_hover"]
+resource_name = "primary_hover - 9-slice"
+content_margin_left = 18.0
+content_margin_top = 12.0
+content_margin_right = 18.0
+content_margin_bottom = 12.0
+texture = ExtResource("Texture_primary_hover")
+texture_margin_left = 16.0
+texture_margin_top = 12.0
+texture_margin_right = 16.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="Style_primary_pressed"]
+resource_name = "primary_pressed - 9-slice"
+content_margin_left = 18.0
+content_margin_top = 12.0
+content_margin_right = 18.0
+content_margin_bottom = 12.0
+texture = ExtResource("Texture_primary_pressed")
+texture_margin_left = 16.0
+texture_margin_top = 12.0
+texture_margin_right = 16.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="Style_input"]
+resource_name = "input - 9-slice"
+content_margin_left = 14.0
+content_margin_top = 12.0
+content_margin_right = 14.0
+content_margin_bottom = 12.0
+texture = ExtResource("Texture_button")
+texture_margin_left = 16.0
+texture_margin_top = 12.0
+texture_margin_right = 16.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="Style_focus"]
+resource_name = "focus - 9-slice"
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+texture = ExtResource("Texture_primary_hover")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+draw_center = false
+expand_margin_left = 3.0
+expand_margin_top = 3.0
+expand_margin_right = 3.0
+expand_margin_bottom = 3.0
+
+[resource]
+resource_name = "Main Menu - Immortal"
+default_font = ExtResource("Font_Immortal")
+default_font_size = 16
+Button/colors/font_hover_color = Color(0.18, 0.105, 0.065, 1)
+Button/colors/font_focus_color = Color(0.18, 0.105, 0.065, 1)
+Button/colors/font_pressed_color = Color(0.18, 0.105, 0.065, 1)
+Button/colors/font_hover_pressed_color = Color(0.18, 0.105, 0.065, 1)
+OptionButton/colors/font_color = Color(0.18, 0.105, 0.065, 1)
+OptionButton/colors/font_hover_color = Color(0.18, 0.105, 0.065, 1)
+OptionButton/colors/font_focus_color = Color(0.18, 0.105, 0.065, 1)
+OptionButton/colors/font_pressed_color = Color(0.18, 0.105, 0.065, 1)
+OptionButton/colors/font_hover_pressed_color = Color(0.18, 0.105, 0.065, 1)
+Button/styles/hover_pressed = SubResource("Style_pressed")
+PopupMenu/colors/font_color = Color(0.18, 0.105, 0.065, 1)
+PopupMenu/colors/font_hover_color = Color(0.18, 0.105, 0.065, 1)
+PopupMenu/styles/panel = SubResource("Style_panel")
+PopupMenu/styles/hover = SubResource("Style_hover")
+Button/colors/font_color = Color(0.18, 0.105, 0.065, 1)
+Button/styles/normal = SubResource("Style_button")
+Button/styles/hover = SubResource("Style_hover")
+Button/styles/pressed = SubResource("Style_pressed")
+Button/styles/focus = SubResource("Style_focus")
+Label/colors/font_color = Color(0.22, 0.14, 0.10, 1)
+LineEdit/colors/font_color = Color(0.18, 0.105, 0.065, 1)
+LineEdit/colors/font_placeholder_color = Color(0.34, 0.28, 0.23, 1)
+LineEdit/styles/normal = SubResource("Style_input")
+LineEdit/styles/focus = SubResource("Style_focus")
+OptionButton/styles/normal = SubResource("Style_button")
+OptionButton/styles/hover = SubResource("Style_hover")
+OptionButton/styles/pressed = SubResource("Style_pressed")
+OptionButton/styles/focus = SubResource("Style_focus")
+PanelContainer/styles/panel = SubResource("Style_panel")
+VBoxContainer/constants/separation = 12
+HBoxContainer/constants/separation = 12
+
+PrimaryButton/base_type = &"Button"
+PrimaryButton/colors/font_color = Color(0.18, 0.105, 0.065, 1)
+PrimaryButton/colors/font_focus_color = Color(0.18, 0.105, 0.065, 1)
+PrimaryButton/styles/normal = SubResource("Style_primary")
+PrimaryButton/styles/hover = SubResource("Style_primary_hover")
+PrimaryButton/styles/pressed = SubResource("Style_primary_pressed")
+PrimaryButton/styles/hover_pressed = SubResource("Style_primary_pressed")
+PrimaryButton/colors/font_pressed_color = Color(1, 0.95, 0.86, 1)
+PrimaryButton/colors/font_hover_pressed_color = Color(1, 0.95, 0.86, 1)
