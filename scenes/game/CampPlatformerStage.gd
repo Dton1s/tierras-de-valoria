@@ -143,7 +143,11 @@ func _animate_hero_motion(walking: bool) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if inside_house or not is_instance_valid(hero):
+	if inside_house:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+			interaction_requested.emit("door", Vector2(885, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5))
+		return
+	if not is_instance_valid(hero):
 		return
 	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
 		return
@@ -224,29 +228,184 @@ func _add_cabin() -> void:
 
 
 func _build_interior() -> void:
-	var wall := ColorRect.new()
-	wall.color = Color("#594034")
-	wall.position = Vector2(0, 0)
-	wall.size = BASE_SIZE
-	wall.z_index = -10
-	world_root.add_child(wall)
+	var backdrop := ColorRect.new()
+	backdrop.name = "RoomBackdrop"
+	backdrop.color = Color("#39291f")
+	backdrop.position = Vector2.ZERO
+	backdrop.size = BASE_SIZE
+	backdrop.z_index = -20
+	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	world_root.add_child(backdrop)
+
 	var inner_wall := ColorRect.new()
-	inner_wall.color = Color("#b68b5c")
-	inner_wall.position = Vector2(80, 110)
-	inner_wall.size = Vector2(992, 470)
-	inner_wall.z_index = -9
+	inner_wall.name = "WarmPlasterWalls"
+	inner_wall.color = Color("#cbb184")
+	inner_wall.position = Vector2(80, 105)
+	inner_wall.size = Vector2(992, 410)
+	inner_wall.z_index = -19
+	inner_wall.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	world_root.add_child(inner_wall)
+	_add_room_rect("WallInset", Color("#dfc99f"), Rect2(103, 130, 946, 354), -18)
+
+	# Roble visto: vigas, zócalo y juntas de madera hacen que la habitación
+	# se lea como el interior de la misma cabaña del exterior.
+	_add_room_rect("TopTimber", Color("#533523"), Rect2(80, 105, 992, 27), -16)
+	_add_room_rect("TopTimberHighlight", Color("#95623a"), Rect2(83, 108, 986, 6), -15)
+	_add_room_rect("LeftTimber", Color("#5a3824"), Rect2(105, 130, 24, 385), -15)
+	_add_room_rect("CenterTimber", Color("#6a4329"), Rect2(625, 132, 18, 355), -15)
+	_add_room_rect("RightTimber", Color("#5a3824"), Rect2(1024, 130, 24, 385), -15)
+	_add_room_rect("WaistRail", Color("#815333"), Rect2(129, 352, 895, 13), -15)
+	_add_room_rect("WaistRailHighlight", Color("#b07a49"), Rect2(129, 352, 895, 4), -14)
+
 	var floor := ColorRect.new()
-	floor.color = Color("#72503a")
+	floor.name = "PlankFloor"
+	floor.color = Color("#765036")
 	floor.position = Vector2(80, 515)
-	floor.size = Vector2(992, 95)
-	floor.z_index = -8
+	floor.size = Vector2(992, 110)
+	floor.z_index = -12
+	floor.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	world_root.add_child(floor)
+	_add_room_rect("FloorFrontEdge", Color("#4b3021"), Rect2(80, 510, 992, 16), -11)
+	_add_room_rect("FloorFrontHighlight", Color("#b07a49"), Rect2(80, 510, 992, 5), -10)
+	for board_index in range(1, 9):
+		var seam_x := 80.0 + float(board_index) * 110.0
+		_add_room_rect("FloorSeam%d" % board_index, Color("#5c3d2c"), Rect2(seam_x, 527, 2, 92), -9)
+	_add_room_rect("FloorBoardLineA", Color("#8b6242"), Rect2(82, 562, 988, 2), -9)
+	_add_room_rect("FloorBoardLineB", Color("#5c3d2c"), Rect2(82, 594, 988, 2), -9)
+
+	_add_room_window(Vector2(205, 219))
+	_add_room_wall_lantern(Vector2(548, 224))
+	_add_room_shelf(Vector2(684, 290))
+	_add_sprite("res://assets/sprites/environments/medieval_village_intc2748/Objects/Notice_Board.png", Vector2(850, 231), Vector2(1.55, 1.55), -5).name = "RoomNoticeBoard"
 	_add_house_furniture()
+	_add_room_exit_door()
 	_add_player()
-	_add_interaction("bed", Vector2(350, 490), Vector2(210, 120), "Cama · Experiencia AFK", Vector2(430, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -115.0)
-	_add_interaction("chest", Vector2(790, 535), Vector2(116, 100), "Cofre · Recompensas AFK", Vector2(730, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -112.0)
-	_add_interaction("door", Vector2(1010, 510), Vector2(100, 140), "Salir al campamento", Vector2(960, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -150.0)
+	_add_interaction("bed", Vector2(350, 475), Vector2(280, 145), "Cama · Experiencia AFK", Vector2(430, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -125.0)
+	_add_interaction("chest", Vector2(785, 472), Vector2(148, 112), "Cofre · Recompensas AFK", Vector2(700, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -112.0)
+	_add_interaction("door", Vector2(1000, 469), Vector2(138, 178), "Salir al campamento", Vector2(885, INTERIOR_GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -145.0)
+
+
+func _add_room_rect(node_name: String, color: Color, rect: Rect2, layer: int) -> ColorRect:
+	var piece := ColorRect.new()
+	piece.name = node_name
+	piece.color = color
+	piece.position = rect.position
+	piece.size = rect.size
+	piece.z_index = layer
+	piece.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	world_root.add_child(piece)
+	return piece
+
+
+func _add_room_polygon(node_name: String, color: Color, points: PackedVector2Array, layer: int) -> Polygon2D:
+	var piece := Polygon2D.new()
+	piece.name = node_name
+	piece.color = color
+	piece.polygon = points
+	piece.z_index = layer
+	world_root.add_child(piece)
+	return piece
+
+
+func _add_room_window(at: Vector2) -> void:
+	_add_room_rect("WindowFrame", Color("#513522"), Rect2(at, Vector2(152, 110)), -7)
+	_add_room_rect("WindowSill", Color("#a36b3e"), Rect2(at + Vector2(-8, 103), Vector2(168, 13)), -6)
+	_add_room_rect("WindowGlass", Color("#6d9ba0"), Rect2(at + Vector2(10, 10), Vector2(132, 82)), -6)
+	_add_room_rect("WindowLeftPane", Color("#a4ced0"), Rect2(at + Vector2(19, 17), Vector2(52, 33)), -5)
+	_add_room_rect("WindowRightPane", Color("#8cb8bd"), Rect2(at + Vector2(81, 17), Vector2(52, 33)), -5)
+	_add_room_rect("WindowBottomLeftPane", Color("#79a9b1"), Rect2(at + Vector2(19, 56), Vector2(52, 29)), -5)
+	_add_room_rect("WindowBottomRightPane", Color("#b5d0c8"), Rect2(at + Vector2(81, 56), Vector2(52, 29)), -5)
+	_add_room_rect("WindowVerticalBar", Color("#513522"), Rect2(at + Vector2(74, 8), Vector2(7, 88)), -4)
+	_add_room_rect("WindowHorizontalBar", Color("#513522"), Rect2(at + Vector2(8, 51), Vector2(136, 7)), -4)
+
+
+func _add_room_wall_lantern(at: Vector2) -> void:
+	_add_room_rect("LanternBracket", Color("#553522"), Rect2(at + Vector2(-7, 18), Vector2(26, 8)), -7)
+	_add_room_rect("LanternStem", Color("#553522"), Rect2(at + Vector2(9, 5), Vector2(7, 20)), -6)
+	_add_room_rect("LanternCap", Color("#5b3925"), Rect2(at + Vector2(1, -3), Vector2(24, 7)), -6)
+	_add_room_rect("LanternGlass", Color("#f5c66c"), Rect2(at + Vector2(4, 4), Vector2(19, 25)), -5)
+	_add_room_rect("LanternBase", Color("#5b3925"), Rect2(at + Vector2(1, 28), Vector2(25, 7)), -5)
+
+
+func _add_room_shelf(at: Vector2) -> void:
+	_add_room_rect("WallShelfShadow", Color("#513522"), Rect2(at, Vector2(192, 16)), -6)
+	_add_room_rect("WallShelf", Color("#9a6238"), Rect2(at + Vector2(0, -5), Vector2(192, 11)), -5)
+	var bottle_colors := [Color("#6e994d"), Color("#a64e45"), Color("#486f91"), Color("#c79443"), Color("#6e994d")]
+	for bottle_index in range(bottle_colors.size()):
+		var bottle_x := at.x + 15.0 + float(bottle_index) * 34.0
+		_add_room_rect("ShelfBottle%d" % bottle_index, bottle_colors[bottle_index], Rect2(bottle_x, at.y - 34, 18, 28), -6)
+		_add_room_rect("ShelfBottleNeck%d" % bottle_index, Color("#e6cc91"), Rect2(bottle_x + 5, at.y - 40, 8, 8), -6)
+	_add_room_rect("ShelfBookA", Color("#733b2d"), Rect2(at.x + 143, at.y - 38, 13, 34), -6)
+	_add_room_rect("ShelfBookB", Color("#3e5960"), Rect2(at.x + 159, at.y - 32, 12, 28), -6)
+
+
+func _add_room_exit_door() -> void:
+	_add_room_rect("ExitDoorShadow", Color("#3d281d"), Rect2(960, 380, 86, 137), -3)
+	var door := _add_sprite(HOUSE_DOOR, Vector2(1003, 450), Vector2(2.65, 2.1), -2)
+	door.name = "ExitDoorToCamp"
+	var sign := Label.new()
+	sign.name = "ExitDoorSign"
+	sign.text = "SALIDA · CAMPAMENTO"
+	sign.position = Vector2(904, 344)
+	sign.size = Vector2(200, 25)
+	sign.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sign.add_theme_font_size_override("font_size", 13)
+	sign.add_theme_color_override("font_color", Color("#fff0c8"))
+	sign.add_theme_color_override("font_outline_color", Color("#382216"))
+	sign.add_theme_constant_override("outline_size", 4)
+	sign.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sign.z_index = -1
+	world_root.add_child(sign)
+
+
+func _add_house_furniture() -> void:
+	# Alfombra, cama de madera con colcha y almohada; las formas siguen el
+	# acabado cálido del refugio y dejan al héroe visible al descansar.
+	_add_room_polygon("BedRugBorder", Color("#533323"), PackedVector2Array([
+		Vector2(202, 470), Vector2(472, 470), Vector2(523, 550), Vector2(253, 550)
+	]), 2)
+	_add_room_polygon("BedRug", Color("#8d4936"), PackedVector2Array([
+		Vector2(214, 475), Vector2(465, 475), Vector2(510, 544), Vector2(259, 544)
+	]), 3)
+	_add_room_polygon("BedRugInset", Color("#b87b4a"), PackedVector2Array([
+		Vector2(230, 481), Vector2(455, 481), Vector2(493, 538), Vector2(268, 538)
+	]), 4)
+	_add_room_rect("BedLegLeftBack", Color("#4e3020"), Rect2(253, 446, 14, 63), 5)
+	_add_room_rect("BedLegRightBack", Color("#4e3020"), Rect2(464, 446, 14, 63), 5)
+	_add_room_polygon("BedFrame", Color("#54331f"), PackedVector2Array([
+		Vector2(242, 405), Vector2(451, 405), Vector2(500, 470), Vector2(291, 470)
+	]), 6)
+	_add_room_polygon("BedFrameTrim", Color("#a16b3e"), PackedVector2Array([
+		Vector2(250, 410), Vector2(446, 410), Vector2(490, 462), Vector2(294, 462)
+	]), 7)
+	_add_room_polygon("BedMattress", Color("#ead8b2"), PackedVector2Array([
+		Vector2(259, 415), Vector2(441, 415), Vector2(480, 457), Vector2(298, 457)
+	]), 8)
+	_add_room_polygon("BedPillow", Color("#fff1d5"), PackedVector2Array([
+		Vector2(267, 419), Vector2(322, 419), Vector2(345, 445), Vector2(290, 445)
+	]), 9)
+	_add_room_polygon("BedQuilt", Color("#8f4037"), PackedVector2Array([
+		Vector2(346, 415), Vector2(441, 415), Vector2(480, 457), Vector2(385, 457)
+	]), 9)
+	_add_room_polygon("BedQuiltFold", Color("#b7684e"), PackedVector2Array([
+		Vector2(357, 420), Vector2(438, 420), Vector2(450, 433), Vector2(369, 433)
+	]), 10)
+	_add_room_rect("BedLegLeftFront", Color("#4e3020"), Rect2(282, 462, 14, 46), 11)
+	_add_room_rect("BedLegRightFront", Color("#4e3020"), Rect2(479, 462, 14, 46), 11)
+
+	var animated_chest := AnimatedSprite2D.new()
+	animated_chest.name = "AnimatedRewardChest"
+	animated_chest.sprite_frames = _make_chest_frames()
+	animated_chest.animation = "idle"
+	animated_chest.position = Vector2(785, INTERIOR_GROUND_LINE - 44.8)
+	animated_chest.scale = Vector2(2.8, 2.8)
+	animated_chest.z_index = 12
+	animated_chest.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	world_root.add_child(animated_chest)
+	animated_chest.play("idle")
+
+	var barrel := _add_sprite("res://assets/sprites/environments/medieval_village_intc2748/Objects/Wooden_Barrel.png", Vector2(151, INTERIOR_GROUND_LINE - 42), Vector2(1.35, 1.35), 7)
+	barrel.name = "InteriorSupplyBarrel"
 
 
 func _add_blacksmith() -> void:
@@ -337,38 +496,6 @@ func _add_exterior_chest() -> void:
 	world_root.add_child(chest)
 	chest.play("idle")
 	_add_interaction("chest", chest.position, Vector2(120, 90), "Cofre · Recompensas", Vector2(980, GROUND_LINE - HERO_RENDER_HEIGHT * 0.5), -130.0)
-
-
-func _add_house_furniture() -> void:
-	# Cama sencilla de madera dentro de la casa y cofre animado del pack Animated Chests.
-	var bed_frame := ColorRect.new()
-	bed_frame.color = Color("#4a2b1c")
-	bed_frame.position = Vector2(250, 480)
-	bed_frame.size = Vector2(218, 76)
-	bed_frame.z_index = 3
-	world_root.add_child(bed_frame)
-	var mattress := ColorRect.new()
-	mattress.color = Color("#ead5a8")
-	mattress.position = Vector2(260, 486)
-	mattress.size = Vector2(198, 54)
-	mattress.z_index = 4
-	world_root.add_child(mattress)
-	var pillow := ColorRect.new()
-	pillow.color = Color("#fff1d2")
-	pillow.position = Vector2(269, 491)
-	pillow.size = Vector2(43, 32)
-	pillow.z_index = 5
-	world_root.add_child(pillow)
-	var animated_chest := AnimatedSprite2D.new()
-	animated_chest.name = "AnimatedRewardChest"
-	animated_chest.sprite_frames = _make_chest_frames()
-	animated_chest.animation = "idle"
-	animated_chest.position = Vector2(790, 540)
-	animated_chest.scale = Vector2(2.0, 2.0)
-	animated_chest.z_index = 9
-	animated_chest.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	world_root.add_child(animated_chest)
-	animated_chest.play("idle")
 
 
 func _add_player() -> void:
